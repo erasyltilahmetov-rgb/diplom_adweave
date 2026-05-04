@@ -1,0 +1,700 @@
+{% load static %}
+<!doctype html>
+<html lang="ru" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}ADWEAVE{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  </head>
+  <body>
+    {% if request.user.is_authenticated %}
+      <div class="app-shell">
+        {% include "includes/sidebar.html" %}
+        <div class="app-topbar">
+          <button class="app-topbar__toggle" type="button" aria-label="Открыть меню" data-sidebar-toggle>☰</button>
+          <a class="app-topbar__brand" href="{% url 'dashboard' %}">
+            <img class="brand-logo" src="{% static 'img/logo.png' %}" alt="AdWeave">
+            <span class="app-topbar__name">AdWeave</span>
+          </a>
+        </div>
+        <div class="app-content">
+    {% else %}
+      {% include "includes/navbar.html" %}
+    {% endif %}
+    {% if messages %}
+      <div class="toast-layer" role="status" aria-live="polite">
+        <div class="toast-stack">
+          {% for message in messages %}
+            <div class="toast toast--{{ message.tags|default:'info' }}" data-toast>
+              <div class="toast__body">{{ message }}</div>
+              <button class="toast__close" type="button" aria-label="Закрыть" data-toast-close>×</button>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      <script>
+        (function () {
+          const toasts = Array.from(document.querySelectorAll("[data-toast]"));
+          toasts.forEach((toast) => {
+            const closeBtn = toast.querySelector("[data-toast-close]");
+            const hide = () => {
+              toast.classList.add("toast--hide");
+              window.setTimeout(() => toast.remove(), 180);
+            };
+            if (closeBtn) {
+              closeBtn.addEventListener("click", hide);
+            }
+            window.setTimeout(hide, 3200);
+          });
+        })();
+      </script>
+    {% endif %}
+    <main class="site-main" data-i18n-auto>
+      {% block content %}{% endblock %}
+    </main>
+
+    {% if request.user.is_authenticated %}
+      </div>
+    {% else %}
+      {% include "includes/footer.html" %}
+    {% endif %}
+    <script>
+      (function () {
+        const root = document.documentElement;
+        const storedTheme = localStorage.getItem("adweave-theme");
+        const storedLang = localStorage.getItem("adweave-lang");
+        const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const initialTheme = storedTheme || (prefersDark ? "dark" : "light");
+        const initialLang = storedLang || root.getAttribute("lang") || "ru";
+
+        const translations = {
+          ru: {
+            "nav.work": "Работа",
+            "nav.manage": "Управление",
+            "nav.pricing": "Тарифы",
+            "nav.product": "Продукт",
+            "nav.features": "Возможности",
+            "nav.cases": "Кейсы",
+            "nav.how": "Как это работает",
+            "nav.contacts": "Контакты",
+            "nav.connectCompany": "Подключить компанию",
+            "nav.dashboard": "Дашборд",
+            "nav.compose": "Compose",
+            "nav.history": "История",
+            "nav.schedule": "Расписание",
+            "nav.campaigns": "Кампании",
+            "nav.analytics": "Аналитика",
+            "nav.monitoring": "Мониторинг",
+            "nav.permissions": "Права",
+            "nav.company": "Компания",
+            "nav.accounts": "Аккаунты",
+            "nav.logout": "Выйти",
+            "nav.login": "Войти",
+            "nav.register": "Регистрация",
+            "nav.application": "Заявка",
+            "nav.menu": "Меню",
+            "theme.dark": "Темная",
+            "theme.light": "Светлая",
+            "footer.product": "Продукт",
+            "footer.features": "Возможности",
+            "footer.pricing": "Тарифы",
+            "footer.updates": "Обновления",
+            "footer.company": "Компания",
+            "footer.about": "О нас",
+            "footer.careers": "Карьера",
+            "footer.contacts": "Контакты",
+            "footer.support": "Поддержка",
+            "footer.help": "Центр помощи",
+            "footer.terms": "Условия",
+            "footer.privacy": "Конфиденциальность",
+            // Dashboard
+            "dash.title":"Дашборд","dash.subtitle":"Ключевые показатели, аналитика и мониторинг Threads.","dash.sync":"Синхронизировать Threads","dash.campaigns":"Все кампании","dash.stat.campaigns":"Кампаний всего","dash.stat.active":"Активных кампаний","dash.stat.posts":"Постов","dash.stat.accounts":"Threads-аккаунтов","dash.stat.mentions":"Упоминаний","dash.stat.replies":"Ответов","dash.analytics":"Аналитика профилей","dash.more":"Подробнее","dash.no_analytics":"Пока нет аналитики профиля.","dash.scheduled":"Ближайшие публикации","dash.to_schedule":"К расписанию","dash.no_scheduled":"Пока нет запланированных публикаций.","dash.recent":"Последние посты","dash.no_posts":"У вас пока нет постов.","dash.mentions":"Упоминания","dash.no_mentions":"Упоминаний пока нет.","dash.replies":"Ответы","dash.no_replies":"Ответов пока нет.",
+            // Compose
+            "comp.subtitle":"Создайте пост, запланируйте его или опубликуйте сразу.","comp.history":"История","comp.limit":"Лимит публикаций на сегодня","comp.upgrade":"Повысить тариф","comp.unlimited":"Без ограничений","comp.params":"Параметры публикации","comp.publish_now":"Опубликовать сразу","comp.save":"Сохранить","comp.ai":"✨ AI Оптимизация","comp.schedule":"Расписание","comp.preview":"Предпросмотр","comp.preview_hint":"Начните вводить текст поста...","comp.now":"сейчас",
+            // History
+            "hist.title":"История публикаций","hist.subtitle":"Смотри, что уже публиковалось, и отслеживай ошибки.","hist.new":"Новый пост","hist.published":"Опубликованные","hist.no_published":"Пока нет опубликованных постов.","hist.errors":"Ошибки публикации","hist.no_errors":"Ошибок публикации не найдено.","hist.drafts":"Черновики и готовые","hist.no_drafts":"Черновиков нет.","hist.status_ok":"✓ Опубликован","hist.status_err":"✗ Ошибка","hist.delete":"Удалить","hist.retry":"Повторить","hist.publish":"Опубликовать","hist.open":"Открыть в Threads",
+            // Posts
+            "posts.title":"Посты и расписание","posts.subtitle":"Контент, статусы публикаций и ближайшие слоты.","posts.new":"Создать пост","posts.schedule_title":"Ближайшее расписание","posts.no_schedule":"Расписание пока пустое.","posts.actions":"Быстрые действия","posts.no_posts":"Постов пока нет.",
+            // Analytics
+            "anal.title":"Аналитика","anal.subtitle":"Пока это MVP-витрина. Позже подключим реальные инсайты Threads.","anal.admin":"Аналитика в админке","anal.top":"Топ кампаний по числу постов","anal.no_data":"Нет данных для аналитики.",
+            // Accounts
+            "acc.title":"Threads-аккаунты","acc.subtitle":"Подключайте несколько аккаунтов и выбирайте их в Compose.","acc.connect":"Подключить Threads","acc.my":"Мои аккаунты","acc.no_accounts":"Пока нет подключенных аккаунтов.","acc.save":"Сохранить","acc.edit":"Изменить","acc.delete":"Удалить","acc.active":"Активен","acc.inactive":"Выключен",
+            // Campaigns
+            "camp.title":"Кампании","camp.subtitle":"Список маркетинговых кампаний и их текущий статус.","camp.add":"Добавить кампанию","camp.all":"Все кампании","camp.no_camps":"Кампаний пока нет.",
+          },
+          en: {
+            "nav.work": "Work",
+            "nav.manage": "Manage",
+            "nav.pricing": "Pricing",
+            "nav.product": "Product",
+            "nav.features": "Features",
+            "nav.cases": "Cases",
+            "nav.how": "How it works",
+            "nav.contacts": "Contacts",
+            "nav.connectCompany": "Connect company",
+            "nav.dashboard": "Dashboard",
+            "nav.compose": "Compose",
+            "nav.history": "History",
+            "nav.schedule": "Schedule",
+            "nav.campaigns": "Campaigns",
+            "nav.analytics": "Analytics",
+            "nav.monitoring": "Monitoring",
+            "nav.permissions": "Permissions",
+            "nav.company": "Company",
+            "nav.accounts": "Accounts",
+            "nav.logout": "Log out",
+            "nav.login": "Log in",
+            "nav.register": "Sign up",
+            "nav.application": "Application",
+            "nav.menu": "Menu",
+            "theme.dark": "Dark",
+            "theme.light": "Light",
+            "footer.product": "Product",
+            "footer.features": "Features",
+            "footer.pricing": "Pricing",
+            "footer.updates": "Updates",
+            "footer.company": "Company",
+            "footer.about": "About",
+            "footer.careers": "Careers",
+            "footer.contacts": "Contacts",
+            "footer.support": "Support",
+            "footer.help": "Help center",
+            "footer.terms": "Terms",
+            "footer.privacy": "Privacy",
+            "dash.title":"Dashboard","dash.subtitle":"Key metrics, analytics and Threads monitoring.","dash.sync":"Sync Threads","dash.campaigns":"All campaigns","dash.stat.campaigns":"Total campaigns","dash.stat.active":"Active campaigns","dash.stat.posts":"Posts","dash.stat.accounts":"Threads accounts","dash.stat.mentions":"Mentions","dash.stat.replies":"Replies","dash.analytics":"Profile analytics","dash.more":"More","dash.no_analytics":"No profile analytics yet.","dash.scheduled":"Upcoming posts","dash.to_schedule":"Schedule","dash.no_scheduled":"No scheduled posts yet.","dash.recent":"Recent posts","dash.no_posts":"No posts yet.","dash.mentions":"Mentions","dash.no_mentions":"No mentions yet.","dash.replies":"Replies","dash.no_replies":"No replies yet.",
+            "comp.subtitle":"Create a post, schedule it or publish now.","comp.history":"History","comp.limit":"Daily publish limit","comp.upgrade":"Upgrade plan","comp.unlimited":"Unlimited","comp.params":"Post parameters","comp.publish_now":"Publish now","comp.save":"Save","comp.ai":"✨ AI Optimize","comp.schedule":"Schedule","comp.preview":"Preview","comp.preview_hint":"Start typing your post...","comp.now":"now",
+            "hist.title":"Publication history","hist.subtitle":"Track what was published and monitor errors.","hist.new":"New post","hist.published":"Published","hist.no_published":"No published posts yet.","hist.errors":"Publish errors","hist.no_errors":"No publish errors found.","hist.drafts":"Drafts & ready","hist.no_drafts":"No drafts.","hist.status_ok":"✓ Published","hist.status_err":"✗ Error","hist.delete":"Delete","hist.retry":"Retry","hist.publish":"Publish","hist.open":"Open in Threads",
+            "posts.title":"Posts & Schedule","posts.subtitle":"Content, publish statuses and upcoming slots.","posts.new":"New post","posts.schedule_title":"Upcoming schedule","posts.no_schedule":"Schedule is empty.","posts.actions":"Quick actions","posts.no_posts":"No posts yet.",
+            "anal.title":"Analytics","anal.subtitle":"MVP view. Real Threads insights coming soon.","anal.admin":"Analytics in admin","anal.top":"Top campaigns by post count","anal.no_data":"No analytics data.",
+            "acc.title":"Threads Accounts","acc.subtitle":"Connect multiple accounts and select them in Compose.","acc.connect":"Connect Threads","acc.my":"My accounts","acc.no_accounts":"No connected accounts yet.","acc.save":"Save","acc.edit":"Edit","acc.delete":"Delete","acc.active":"Active","acc.inactive":"Disabled",
+            "camp.title":"Campaigns","camp.subtitle":"List of marketing campaigns and their status.","camp.add":"Add campaign","camp.all":"All campaigns","camp.no_camps":"No campaigns yet.",
+          },
+          kz: {
+            "nav.work": "Жұмыс",
+            "nav.manage": "Басқару",
+            "nav.pricing": "Тарифтер",
+            "nav.product": "Өнім",
+            "nav.features": "Мүмкіндіктер",
+            "nav.cases": "Кейстер",
+            "nav.how": "Қалай жұмыс істейді",
+            "nav.contacts": "Контактілер",
+            "nav.connectCompany": "Компания қосу",
+            "nav.dashboard": "Дашборд",
+            "nav.compose": "Compose",
+            "nav.history": "Тарих",
+            "nav.schedule": "Кесте",
+            "nav.campaigns": "Кампаниялар",
+            "nav.analytics": "Аналитика",
+            "nav.monitoring": "Мониторинг",
+            "nav.permissions": "Құқықтар",
+            "nav.company": "Компания",
+            "nav.accounts": "Аккаунттар",
+            "nav.logout": "Шығу",
+            "nav.login": "Кіру",
+            "nav.register": "Тіркелу",
+            "nav.application": "Өтінім",
+            "nav.menu": "Мәзір",
+            "theme.dark": "Қараңғы",
+            "theme.light": "Жарық",
+            "footer.product": "Өнім",
+            "footer.features": "Мүмкіндіктер",
+            "footer.pricing": "Тарифтер",
+            "footer.updates": "Жаңартулар",
+            "footer.company": "Компания",
+            "footer.about": "Біз туралы",
+            "footer.careers": "Мансап",
+            "footer.contacts": "Контактілер",
+            "footer.support": "Қолдау",
+            "footer.help": "Көмек орталығы",
+            "footer.terms": "Шарттар",
+            "footer.privacy": "Құпиялық",
+            "dash.title":"Дашборд","dash.subtitle":"Негізгі көрсеткіштер, аналитика және Threads мониторингі.","dash.sync":"Threads синхрондау","dash.campaigns":"Барлық кампаниялар","dash.stat.campaigns":"Барлық кампаниялар","dash.stat.active":"Белсенді кампаниялар","dash.stat.posts":"Жазбалар","dash.stat.accounts":"Threads аккаунттары","dash.stat.mentions":"Еске алулар","dash.stat.replies":"Жауаптар","dash.analytics":"Профиль аналитикасы","dash.more":"Толығырақ","dash.no_analytics":"Профиль аналитикасы жоқ.","dash.scheduled":"Жақындағы жарияланымдар","dash.to_schedule":"Кестеге","dash.no_scheduled":"Жоспарланған жазбалар жоқ.","dash.recent":"Соңғы жазбалар","dash.no_posts":"Жазбалар жоқ.","dash.mentions":"Еске алулар","dash.no_mentions":"Еске алулар жоқ.","dash.replies":"Жауаптар","dash.no_replies":"Жауаптар жоқ.",
+            "comp.subtitle":"Жазба жасаңыз, жоспарлаңыз немесе бірден жариялаңыз.","comp.history":"Тарих","comp.limit":"Күндік жариялау лимиті","comp.upgrade":"Тарифті жаңарту","comp.unlimited":"Шексіз","comp.params":"Жариялау параметрлері","comp.publish_now":"Бірден жариялау","comp.save":"Сақтау","comp.ai":"✨ AI Оптимизация","comp.schedule":"Кесте","comp.preview":"Алдын ала қарау","comp.preview_hint":"Мәтін теруді бастаңыз...","comp.now":"қазір",
+            "hist.title":"Жариялау тарихы","hist.subtitle":"Не жарияланғанын қараңыз.","hist.new":"Жаңа жазба","hist.published":"Жарияланған","hist.no_published":"Жарияланған жазбалар жоқ.","hist.errors":"Жариялау қателері","hist.no_errors":"Қателер табылмады.","hist.drafts":"Жобалар","hist.no_drafts":"Жобалар жоқ.","hist.status_ok":"✓ Жарияланды","hist.status_err":"✗ Қате","hist.delete":"Жою","hist.retry":"Қайтадан","hist.publish":"Жариялау","hist.open":"Threads-та ашу",
+            "posts.title":"Жазбалар және кесте","posts.subtitle":"Контент, жариялау мәртебесі.","posts.new":"Жазба жасау","posts.schedule_title":"Жақындағы кесте","posts.no_schedule":"Кесте бос.","posts.actions":"Жылдам әрекеттер","posts.no_posts":"Жазбалар жоқ.",
+            "anal.title":"Аналитика","anal.subtitle":"MVP нұсқасы. Нақты Threads деректері жақында қосылады.","anal.admin":"Аналитика","anal.top":"Жазба саны бойынша үздік кампаниялар","anal.no_data":"Аналитика деректері жоқ.",
+            "acc.title":"Threads аккаунттары","acc.subtitle":"Бірнеше аккаунт қосып, Compose-та таңдаңыз.","acc.connect":"Threads қосу","acc.my":"Менің аккаунттарым","acc.no_accounts":"Қосылған аккаунттар жоқ.","acc.save":"Сақтау","acc.edit":"Өзгерту","acc.delete":"Жою","acc.active":"Белсенді","acc.inactive":"Өшірілген",
+            "camp.title":"Кампаниялар","camp.subtitle":"Маркетингтік кампаниялар тізімі.","camp.add":"Кампания қосу","camp.all":"Барлық кампаниялар","camp.no_camps":"Кампаниялар жоқ.",
+          },
+        };
+
+        const autoTranslations = {
+          en: {
+            "Главная": "Home",
+            "Дашборд": "Dashboard",
+            "История": "History",
+            "История публикаций": "Publishing history",
+            "Посты и расписание": "Posts & schedule",
+            "Кампании": "Campaigns",
+            "Аналитика": "Analytics",
+            "Мониторинг": "Monitoring",
+            "Права": "Permissions",
+            "Тарифы": "Pricing",
+            "Контакты": "Contacts",
+            "Как это работает": "How it works",
+            "Возможности": "Features",
+            "Кейсы": "Cases",
+            "Профиль": "Profile",
+            "Аккаунты": "Accounts",
+            "Компания": "Company",
+            "Выйти": "Log out",
+            "Войти": "Log in",
+            "Регистрация": "Sign up",
+            "Заявка": "Application",
+            "Подключить Threads": "Connect Threads",
+            "Threads-аккаунты": "Threads accounts",
+            "Подключить аккаунт": "Connect account",
+            "Мои аккаунты": "My accounts",
+            "Вход": "Log in",
+            "Создать аккаунт": "Create account",
+            "Нет аккаунта? Создать": "No account? Sign up",
+            "Уже есть аккаунт? Войти": "Already have an account? Log in",
+            "Сохранить": "Save",
+            "Удалить": "Delete",
+            "Назад": "Back",
+            "Редактировать": "Edit",
+            "Повторить": "Retry",
+            "Опубликовать": "Publish",
+            "Синхронизировать": "Sync",
+            "Синхронизировать Threads": "Sync Threads",
+            "Лимит публикаций на сегодня": "Daily publish limit",
+            "Параметры публикации": "Publish settings",
+            "Предпросмотр": "Preview",
+            "Как это будет выглядеть": "How it will look",
+            "Что дальше": "Next steps",
+            "Опубликованные": "Published",
+            "Ошибки публикации": "Publish errors",
+            "Черновики и готовые": "Drafts & ready",
+            "Последние посты": "Latest posts",
+            "Последние упоминания": "Latest mentions",
+            "Последние ответы": "Latest replies",
+            "Ближайшее расписание": "Upcoming schedule",
+            "Быстрые действия": "Quick actions",
+            "Создать пост": "Create post",
+            "Создать кампанию": "Create campaign",
+            "Подключить Threads-аккаунт": "Connect Threads account",
+            "Список маркетинговых кампаний и их текущий статус.": "List of marketing campaigns and their status.",
+            "Создавайте, редактируйте и управляйте своими кампаниями.": "Create, edit and manage your campaigns.",
+            "Новая кампания": "New campaign",
+            "Редактирование кампании": "Edit campaign",
+            "Удалить кампанию?": "Delete campaign?",
+            "Это действие нельзя отменить.": "This action cannot be undone.",
+            "Заявка на подключение компании": "Company connection request",
+            "Отправить заявку": "Submit request",
+            "Заявка отправлена": "Request submitted",
+            "Подключайте несколько аккаунтов и выбирайте их в Compose.": "Connect multiple accounts and choose them in Compose.",
+            "OAuth пока не настроен": "OAuth is not configured yet",
+            "Нужно подготовить данные": "Data required",
+            "Мониторинг Threads": "Threads monitoring",
+            "Упоминания, ответы, поиск и топ‑темы.": "Mentions, replies, search and top topics.",
+            "Аккаунт для мониторинга": "Monitoring account",
+            "Топ‑темы": "Top topics",
+            "Тренды по ключевым словам": "Trends by keywords",
+            "Собрать тренды": "Collect trends",
+            "Поиск по ключевым словам": "Keyword search",
+            "Поиск профиля": "Profile search",
+            "Найти": "Find",
+            "Нет токена для мониторинга": "No token for monitoring",
+            "К аккаунтам": "To accounts",
+            "Права и функции Threads": "Threads permissions & features",
+            "Связь разрешений Threads и функций в AdWeave.": "Mapping of Threads permissions to AdWeave features.",
+            "Сконфигурированные scopes": "Configured scopes",
+            "Аналитика": "Analytics",
+            "Пока это MVP-витрина. Позже подключим реальные инсайты Threads.": "This is an MVP showcase. Real Threads insights will be added later.",
+            "Топ кампаний по числу постов": "Top campaigns by posts",
+            "Политика конфиденциальности": "Privacy Policy",
+            "Последнее обновление: 1 февраля 2026": "Last updated: February 1, 2026",
+            "Свяжитесь с нами": "Contact us",
+            "Выберите подходящий тариф": "Choose the right plan",
+            "Часто задаваемые вопросы": "Frequently asked questions",
+            "Готовы начать работу с AdWeave?": "Ready to start with AdWeave?",
+            "Начать бесплатно": "Start free",
+            "Как это работает": "How it works",
+            "Попробовать платформу": "Try the platform",
+            "Связаться с нами": "Contact us",
+            "Compose": "Compose",
+            "Threads-аккаунт": "Threads account",
+            "Ключевое слово": "Keyword",
+            "Загрузить посты": "Load posts",
+            "Искать": "Search",
+            "Ключевые слова (через запятую или с новой строки)": "Keywords (comma or new line)",
+            "например, adweave": "e.g. adweave",
+            "username": "username",
+            "Без заголовка": "No title",
+            "Пост без заголовка": "Untitled post",
+            "пост": "post",
+            "AI-платформа для маркетинга": "AI platform for marketing",
+            "Интеллектуальный": "Intelligent",
+            "сервис генерации": "text generation service",
+            "текстов": "for content",
+            "Эффективно для маркетинга: автоматизируйте создание контента, планируйте публикации и управляйте кампаниями в Threads через единый интерфейс.": "Marketing‑ready: automate content creation, plan posts, and manage Threads campaigns in one interface.",
+            "экономия времени": "time saved",
+            "оптимизация текста": "text optimization",
+            "автопостинг": "auto posting",
+            "AI + автоматизация": "AI + automation",
+            "Интеллектуальные технологии для эффективного маркетинга": "Smart technologies for effective marketing",
+            "AdWeave объединяет генеративный AI, планировщик публикаций и аналитику, чтобы вы запускали кампании быстрее и получали предсказуемый результат.": "AdWeave combines generative AI, scheduling and analytics so you launch faster and get predictable results.",
+            "AI-оптимизация контента": "AI content optimization",
+            "Тексты адаптируются под стиль бренда и цели кампании.": "Texts adapt to brand style and campaign goals.",
+            "Автопостинг по расписанию": "Scheduled auto‑posting",
+            "Публикации выходят вовремя без ручной рутины.": "Posts go out on time with no manual work.",
+            "Аналитика в реальном времени": "Real‑time analytics",
+            "Следите за охватами, вовлеченностью и ростом аккаунтов.": "Track reach, engagement and account growth.",
+            "Управление несколькими аккаунтами": "Multi‑account management",
+            "Работайте с клиентами и брендами в одном кабинете.": "Work with clients and brands in one dashboard.",
+            "Попробовать платформу": "Try the platform",
+            "Возможности платформы": "Platform features",
+            "Функциональные возможности Adweave": "AdWeave capabilities",
+            "Всё, что нужно для запуска и масштабирования маркетинга в Threads — в одном сервисе.": "Everything you need to launch and scale Threads marketing in one service.",
+            "AI-генерация текста": "AI text generation",
+            "Генерация постов и идей": "Generate posts and ideas",
+            "Адаптация под тон бренда": "Adapt to brand tone",
+            "Варианты заголовков и CTA": "Headline & CTA варианты",
+            "Шаблоны маркетинговых постов": "Marketing post templates",
+            "Быстрый старт кампаний": "Fast campaign start",
+            "Сценарии под разные цели": "Scenarios for different goals",
+            "Единый стиль коммуникации": "Unified communication style",
+            "Автоматическая публикация": "Automatic publishing",
+            "Гибкое расписание": "Flexible scheduling",
+            "Очереди и сценарии": "Queues and scenarios",
+            "Снижение ручной нагрузки": "Less manual effort",
+            "Аналитика эффективности": "Performance analytics",
+            "Метрики вовлеченности": "Engagement metrics",
+            "Рост и активность": "Growth and activity",
+            "Сравнение кампаний": "Campaign comparison",
+            "Гибкие настройки кампаний": "Flexible campaign settings",
+            "Правила и ограничения": "Rules and limits",
+            "Сегменты и гипотезы": "Segments and hypotheses",
+            "A/B-подход к контенту": "A/B content approach",
+            "Безопасность данных": "Data security",
+            "Роли и уровни доступа": "Roles and access levels",
+            "Контроль подключений": "Connection control",
+            "Надежная архитектура": "Reliable architecture",
+            "Подробнее →": "Learn more →",
+            "Готовы автоматизировать маркетинг в Threads?": "Ready to automate Threads marketing?",
+            "Попробуйте AdWeave и получите инструмент, который помогает выпускать больше контента и принимать решения на основе данных.": "Try AdWeave and get a tool to publish more and make data‑driven decisions.",
+          },
+          kz: {
+            "Главная": "Басты",
+            "Дашборд": "Дашборд",
+            "История": "Тарих",
+            "История публикаций": "Жариялау тарихы",
+            "Посты и расписание": "Посттар мен кесте",
+            "Кампании": "Кампаниялар",
+            "Аналитика": "Аналитика",
+            "Мониторинг": "Мониторинг",
+            "Права": "Құқықтар",
+            "Тарифы": "Тарифтер",
+            "Контакты": "Контактілер",
+            "Как это работает": "Қалай жұмыс істейді",
+            "Возможности": "Мүмкіндіктер",
+            "Кейсы": "Кейстер",
+            "Профиль": "Профиль",
+            "Аккаунты": "Аккаунттар",
+            "Компания": "Компания",
+            "Выйти": "Шығу",
+            "Войти": "Кіру",
+            "Регистрация": "Тіркелу",
+            "Заявка": "Өтінім",
+            "Подключить Threads": "Threads қосу",
+            "Threads-аккаунты": "Threads аккаунттары",
+            "Подключить аккаунт": "Аккаунт қосу",
+            "Мои аккаунты": "Менің аккаунттарым",
+            "Вход": "Кіру",
+            "Создать аккаунт": "Аккаунт құру",
+            "Нет аккаунта? Создать": "Аккаунт жоқ па? Тіркелу",
+            "Уже есть аккаунт? Войти": "Аккаунт бар ма? Кіру",
+            "Сохранить": "Сақтау",
+            "Удалить": "Жою",
+            "Назад": "Артқа",
+            "Редактировать": "Өзгерту",
+            "Повторить": "Қайталау",
+            "Опубликовать": "Жариялау",
+            "Синхронизировать": "Синхрондау",
+            "Синхронизировать Threads": "Threads синхрондау",
+            "Лимит публикаций на сегодня": "Бүгінгі жариялау лимиті",
+            "Параметры публикации": "Жариялау параметрлері",
+            "Предпросмотр": "Алдын ала қарау",
+            "Как это будет выглядеть": "Қалай көрінеді",
+            "Что дальше": "Келесі қадам",
+            "Опубликованные": "Жарияланған",
+            "Ошибки публикации": "Жариялау қателері",
+            "Черновики и готовые": "Қаражат пен дайын",
+            "Последние посты": "Соңғы посттар",
+            "Последние упоминания": "Соңғы аталымдар",
+            "Последние ответы": "Соңғы жауаптар",
+            "Ближайшее расписание": "Жақын кесте",
+            "Быстрые действия": "Жылдам әрекеттер",
+            "Создать пост": "Пост құру",
+            "Создать кампанию": "Кампания құру",
+            "Подключить Threads-аккаунт": "Threads аккаунтын қосу",
+            "Список маркетинговых кампаний и их текущий статус.": "Маркетинг кампанияларының тізімі және мәртебесі.",
+            "Создавайте, редактируйте и управляйте своими кампаниями.": "Кампанияларды құрыңыз, өзгертіңіз және басқарыңыз.",
+            "Новая кампания": "Жаңа кампания",
+            "Редактирование кампании": "Кампанияны өзгерту",
+            "Удалить кампанию?": "Кампанияны жою керек пе?",
+            "Это действие нельзя отменить.": "Бұл әрекетті қайтару мүмкін емес.",
+            "Заявка на подключение компании": "Компания қосу өтінімі",
+            "Отправить заявку": "Өтінім жіберу",
+            "Заявка отправлена": "Өтінім жіберілді",
+            "Подключайте несколько аккаунтов и выбирайте их в Compose.": "Бірнеше аккаунт қосып, Compose-та таңдаңыз.",
+            "OAuth пока не настроен": "OAuth әзірге бапталмаған",
+            "Нужно подготовить данные": "Деректер қажет",
+            "Мониторинг Threads": "Threads мониторингі",
+            "Упоминания, ответы, поиск и топ‑темы.": "Аталымдар, жауаптар, іздеу және топ‑тақырыптар.",
+            "Аккаунт для мониторинга": "Мониторинг аккаунты",
+            "Топ‑темы": "Топ‑тақырыптар",
+            "Тренды по ключевым словам": "Кілт сөздер бойынша трендтер",
+            "Собрать тренды": "Трендтерді жинау",
+            "Поиск по ключевым словам": "Кілт сөздер бойынша іздеу",
+            "Поиск профиля": "Профиль іздеу",
+            "Найти": "Табу",
+            "Нет токена для мониторинга": "Мониторинг үшін токен жоқ",
+            "К аккаунтам": "Аккаунттарға",
+            "Права и функции Threads": "Threads құқықтары мен функциялары",
+            "Связь разрешений Threads и функций в AdWeave.": "Threads рұқсаттары мен AdWeave функцияларының байланысы.",
+            "Сконфигурированные scopes": "Бапталған scopes",
+            "Пока это MVP-витрина. Позже подключим реальные инсайты Threads.": "Бұл MVP нұсқасы. Кейін нақты Threads инсайттарын қосамыз.",
+            "Топ кампаний по числу постов": "Пост саны бойынша топ кампаниялар",
+            "Политика конфиденциальности": "Құпиялық саясаты",
+            "Последнее обновление: 1 февраля 2026": "Соңғы жаңарту: 1 ақпан 2026",
+            "Свяжитесь с нами": "Бізбен байланысыңыз",
+            "Выберите подходящий тариф": "Тиісті тарифті таңдаңыз",
+            "Часто задаваемые вопросы": "Жиі қойылатын сұрақтар",
+            "Готовы начать работу с AdWeave?": "AdWeave‑пен жұмыс бастауға дайынсыз ба?",
+            "Начать бесплатно": "Тегін бастау",
+            "Попробовать платформу": "Платформаны сынау",
+            "Связаться с нами": "Бізбен байланысыңыз",
+            "Compose": "Compose",
+            "Threads-аккаунт": "Threads аккаунты",
+            "Ключевое слово": "Кілт сөз",
+            "Загрузить посты": "Посттарды жүктеу",
+            "Искать": "Іздеу",
+            "Ключевые слова (через запятую или с новой строки)": "Кілт сөздер (үтір немесе жаңа жол)",
+            "например, adweave": "мысалы, adweave",
+            "username": "username",
+            "Без заголовка": "Тақырыпсыз",
+            "Пост без заголовка": "Тақырыпсыз пост",
+            "пост": "пост",
+            "AI-платформа для маркетинга": "Маркетингке арналған AI платформа",
+            "Интеллектуальный": "Зияткерлік",
+            "сервис генерации": "генерация сервисі",
+            "текстов": "мәтіндер үшін",
+            "Эффективно для маркетинга: автоматизируйте создание контента, планируйте публикации и управляйте кампаниями в Threads через единый интерфейс.": "Маркетингке тиімді: контент жасауды автоматтандырыңыз, жариялауды жоспарлаңыз және Threads кампанияларын бір интерфейсте басқарыңыз.",
+            "экономия времени": "уақыт үнемдеу",
+            "оптимизация текста": "мәтін оңтайландыру",
+            "автопостинг": "авто жариялау",
+            "AI + автоматизация": "AI + автоматтандыру",
+            "Интеллектуальные технологии для эффективного маркетинга": "Тиімді маркетингке арналған зияткерлік технологиялар",
+            "AdWeave объединяет генеративный AI, планировщик публикаций и аналитику, чтобы вы запускали кампании быстрее и получали предсказуемый результат.": "AdWeave генеративті AI, жариялау жоспарлағышы және аналитиканы біріктіреді.",
+            "AI-оптимизация контента": "AI контент оңтайландыру",
+            "Тексты адаптируются под стиль бренда и цели кампании.": "Мәтіндер бренд стиліне және кампания мақсатына бейімделеді.",
+            "Автопостинг по расписанию": "Кесте бойынша авто жариялау",
+            "Публикации выходят вовремя без ручной рутины.": "Жарияланымдар уақытында шығады.",
+            "Аналитика в реальном времени": "Нақты уақыттағы аналитика",
+            "Следите за охватами, вовлеченностью и ростом аккаунтов.": "Қамту, белсенділік және аккаунт өсімін қадағалаңыз.",
+            "Управление несколькими аккаунтами": "Бірнеше аккаунтты басқару",
+            "Работайте с клиентами и брендами в одном кабинете.": "Клиенттер мен брендтермен бір кабинетте жұмыс істеңіз.",
+            "Возможности платформы": "Платформа мүмкіндіктері",
+            "Функциональные возможности Adweave": "AdWeave мүмкіндіктері",
+            "Всё, что нужно для запуска и масштабирования маркетинга в Threads — в одном сервисе.": "Threads маркетингін іске қосуға және масштабтауға қажеттінің бәрі.",
+            "AI-генерация текста": "AI мәтін генерациясы",
+            "Генерация постов и идей": "Пост пен идея генерациясы",
+            "Адаптация под тон бренда": "Бренд тонына бейімдеу",
+            "Варианты заголовков и CTA": "Тақырып пен CTA нұсқалары",
+            "Шаблоны маркетинговых постов": "Маркетинг пост шаблондары",
+            "Быстрый старт кампаний": "Кампанияны жылдам бастау",
+            "Сценарии под разные цели": "Әртүрлі мақсаттарға сценарий",
+            "Единый стиль коммуникации": "Бірыңғай коммуникация стилі",
+            "Автоматическая публикация": "Автоматты жариялау",
+            "Гибкое расписание": "Икемді кесте",
+            "Очереди и сценарии": "Кезектер мен сценарийлер",
+            "Снижение ручной нагрузки": "Қолмен жұмысты азайту",
+            "Аналитика эффективности": "Тиімділік аналитикасы",
+            "Метрики вовлеченности": "Белсенділік метрикалары",
+            "Рост и активность": "Өсу мен белсенділік",
+            "Сравнение кампаний": "Кампания салыстыру",
+            "Гибкие настройки кампаний": "Кампанияның икемді баптаулары",
+            "Правила и ограничения": "Ережелер мен шектеулер",
+            "Сегменты и гипотезы": "Сегменттер мен гипотезалар",
+            "A/B-подход к контенту": "Контентке A/B тәсіл",
+            "Безопасность данных": "Деректер қауіпсіздігі",
+            "Роли и уровни доступа": "Рөлдер мен қолжетімділік деңгейлері",
+            "Контроль подключений": "Қосылымдарды бақылау",
+            "Надежная архитектура": "Сенімді архитектура",
+            "Подробнее →": "Толығырақ →",
+            "Готовы автоматизировать маркетинг в Threads?": "Threads маркетингін автоматтандыруға дайынсыз ба?",
+            "Попробуйте AdWeave и получите инструмент, который помогает выпускать больше контента и принимать решения на основе данных.": "AdWeave‑ті қолданып, көбірек контент шығарып, дерекке негізделген шешім қабылдаңыз.",
+          },
+        };
+
+        const applyTranslations = (lang) => {
+          const dict = translations[lang] || translations.ru;
+          document.querySelectorAll("[data-i18n]").forEach((el) => {
+            const key = el.getAttribute("data-i18n");
+            if (dict[key]) {
+              el.textContent = dict[key];
+            }
+          });
+
+          document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+            const key = el.getAttribute("data-i18n-placeholder");
+            if (dict[key]) {
+              el.setAttribute("placeholder", dict[key]);
+            }
+          });
+
+          document.querySelectorAll("[data-i18n-title]").forEach((el) => {
+            const key = el.getAttribute("data-i18n-title");
+            if (dict[key]) {
+              el.setAttribute("title", dict[key]);
+            }
+          });
+
+          document.querySelectorAll("[data-i18n-tooltip]").forEach((el) => {
+            const key = el.getAttribute("data-i18n-tooltip");
+            if (dict[key]) {
+              el.setAttribute("data-tooltip", dict[key]);
+            }
+          });
+
+          document.querySelectorAll("[data-i18n-value]").forEach((el) => {
+            const key = el.getAttribute("data-i18n-value");
+            if (dict[key]) {
+              el.value = dict[key];
+            }
+          });
+
+          const autoDict = autoTranslations[lang];
+          if (autoDict) {
+            document.querySelectorAll("[data-i18n-auto]").forEach((container) => {
+              const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+              let node = walker.nextNode();
+              while (node) {
+                const raw = node.nodeValue || "";
+                const trimmed = raw.trim();
+                if (trimmed && autoDict[trimmed]) {
+                  const leading = raw.match(/^\s*/)?.[0] ?? "";
+                  const trailing = raw.match(/\s*$/)?.[0] ?? "";
+                  node.nodeValue = `${leading}${autoDict[trimmed]}${trailing}`;
+                }
+                node = walker.nextNode();
+              }
+
+              container.querySelectorAll("[placeholder]").forEach((el) => {
+                const text = el.getAttribute("placeholder") || "";
+                if (autoDict[text]) {
+                  el.setAttribute("placeholder", autoDict[text]);
+                }
+              });
+
+              container.querySelectorAll("[title]").forEach((el) => {
+                const text = el.getAttribute("title") || "";
+                if (autoDict[text]) {
+                  el.setAttribute("title", autoDict[text]);
+                }
+              });
+            });
+          }
+        };
+
+        root.setAttribute("data-theme", initialTheme);
+        root.setAttribute("lang", initialLang);
+        applyTranslations(initialLang);
+
+        const themeToggle = document.getElementById("themeToggle");
+        const themeText = themeToggle ? themeToggle.querySelector(".theme-toggle__text") : null;
+        const themeIcon = themeToggle ? themeToggle.querySelector(".theme-toggle__icon") : null;
+        const setThemeLabel = (theme, lang) => {
+          if (!themeText || !themeIcon) return;
+          const dict = translations[lang] || translations.ru;
+          if (theme === "dark") {
+            themeText.textContent = dict["theme.dark"];
+            themeIcon.textContent = "🌙";
+          } else {
+            themeText.textContent = dict["theme.light"];
+            themeIcon.textContent = "☀️";
+          }
+        };
+        setThemeLabel(initialTheme, initialLang);
+
+        if (themeToggle) {
+          themeToggle.addEventListener("click", () => {
+            const nextTheme = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+            root.setAttribute("data-theme", nextTheme);
+            localStorage.setItem("adweave-theme", nextTheme);
+            setThemeLabel(nextTheme, root.getAttribute("lang"));
+          });
+        }
+
+        const langSelect = document.getElementById("langSelect");
+        if (langSelect) {
+          langSelect.value = initialLang;
+          langSelect.addEventListener("change", (event) => {
+            const lang = event.target.value;
+            root.setAttribute("lang", lang);
+            localStorage.setItem("adweave-lang", lang);
+            applyTranslations(lang);
+            setThemeLabel(root.getAttribute("data-theme"), lang);
+          });
+        }
+
+        const navToggle = document.querySelector("[data-nav-toggle]");
+        const navbar = document.querySelector(".navbar");
+        if (navToggle && navbar) {
+          navToggle.addEventListener("click", () => {
+            navbar.classList.toggle("navbar--open");
+          });
+        }
+
+        const sidebarToggles = document.querySelectorAll("[data-sidebar-toggle]");
+        const sidebarCollapse = document.querySelector("[data-sidebar-collapse]");
+        const appShell = document.querySelector(".app-shell");
+        const sidebar = document.querySelector(".sidebar");
+        const overlay = document.querySelector(".sidebar-overlay");
+        const toggleSidebar = () => {
+          if (!sidebar || !appShell) return;
+          if (window.innerWidth <= 920) {
+            sidebar.classList.toggle("sidebar--open");
+            if (overlay) {
+              overlay.classList.toggle("sidebar-overlay--show");
+            }
+            return;
+          }
+          appShell.classList.toggle("app-shell--collapsed");
+          localStorage.setItem(
+            "adweave-sidebar-collapsed",
+            appShell.classList.contains("app-shell--collapsed") ? "1" : "0"
+          );
+        };
+        const storedCollapse = localStorage.getItem("adweave-sidebar-collapsed");
+        if (appShell && storedCollapse === "1") {
+          appShell.classList.add("app-shell--collapsed");
+        }
+        const enforceMobileState = () => {
+          if (!appShell) return;
+          if (window.innerWidth <= 920) {
+            appShell.classList.remove("app-shell--collapsed");
+            return;
+          }
+          if (localStorage.getItem("adweave-sidebar-collapsed") === "1") {
+            appShell.classList.add("app-shell--collapsed");
+          }
+        };
+        enforceMobileState();
+        window.addEventListener("resize", enforceMobileState);
+
+        sidebarToggles.forEach((btn) => {
+          btn.addEventListener("click", toggleSidebar);
+        });
+        if (sidebarCollapse) {
+          sidebarCollapse.addEventListener("click", toggleSidebar);
+        }
+        if (overlay) {
+          overlay.addEventListener("click", toggleSidebar);
+        }
+      })();
+    </script>
+  </body>
+</html>

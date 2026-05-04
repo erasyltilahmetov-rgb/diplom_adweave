@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Тарифы — AdWeave{% endblock %}
+
+{% block content %}
+<section class="pricing-hero">
+  <div class="container pricing-hero__grid">
+    <div>
+      <p class="section-badge">Тарифы</p>
+      <h1 class="section-title">Выберите подходящий тариф</h1>
+      <p class="section-lead">
+        Начните бесплатно и масштабируйте автоматизацию маркетинга в Threads по мере роста задач.
+      </p>
+      <div class="pricing-hero__actions">
+        <a class="btn btn--primary" href="{% url 'accounts:register' %}">Начать бесплатно</a>
+        <a class="btn btn--outline" href="{% url 'contacts' %}">Связаться с нами</a>
+      </div>
+    </div>
+    <div class="pricing-hero__visual" aria-hidden="true">
+      <div class="pricing-hero__blob"></div>
+      <div class="pricing-hero__card">
+        <div class="pricing-hero__chip">AI</div>
+        <p>Automation</p>
+        <strong>Threads</strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="pricing">
+  <div class="container">
+    <div class="pricing-grid">
+      <article class="price-card">
+        <p class="price-card__name">Базовый</p>
+        <p class="price-card__price">0 ₸</p>
+        <p class="price-card__meta">Тариф обычный</p>
+        <ul class="price-card__list">
+          <li>Ознакомление с платформой</li>
+          <li>1 автопубликация в день</li>
+          <li>Без заявок на компанию</li>
+        </ul>
+        <a class="btn btn--outline" href="{% url 'accounts:register' %}">Начать бесплатно</a>
+      </article>
+
+      <article class="price-card price-card--featured">
+        <div class="price-card__badge">7 дней бесплатно</div>
+        <p class="price-card__name">Средний</p>
+        <p class="price-card__price">0 ₸ / 7 дней</p>
+        <p class="price-card__meta">Пробный доступ</p>
+        <ul class="price-card__list">
+          <li>До 10 автопубликаций в день</li>
+          <li>AI-оптимизация текста</li>
+          <li>Можно подать заявку на компанию</li>
+          <li>Базовая аналитика</li>
+        </ul>
+        {% if user.is_authenticated %}
+          {% if trial_active %}
+            <div class="price-card__note">
+              Активен до {{ trial_ends_at|date:"d.m.Y" }}
+            </div>
+            <button class="btn btn--outline" type="button" disabled>Пробный тариф активен</button>
+          {% elif trial_started_at %}
+            <div class="price-card__note">Пробный период уже использован</div>
+            <button class="btn btn--outline" type="button" disabled>Недоступно</button>
+          {% else %}
+            <form method="post">
+              {% csrf_token %}
+              <button class="btn btn--primary" name="action" value="start_trial" type="submit">
+                Активировать 7 дней
+              </button>
+            </form>
+          {% endif %}
+        {% else %}
+          <a class="btn btn--primary" href="{% url 'accounts:register' %}">Попробовать</a>
+        {% endif %}
+      </article>
+    </div>
+
+    <div class="pricing-note">Пробный тариф «Средний» доступен 7 дней бесплатно.</div>
+  </div>
+</section>
+
+<section class="faq">
+  <div class="container faq__wrap">
+    <p class="section-badge section-badge--center">FAQ</p>
+    <h2 class="section-title section-title--center">Часто задаваемые вопросы</h2>
+    <div class="faq-list">
+      <details class="faq-item" open>
+        <summary>Что такое AdWeave?</summary>
+        <p>Это платформа для автоматизации маркетинга в Threads: контент, расписание и аналитика.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Чем отличаются тарифы?</summary>
+        <p>Лимитами на автоматизацию, доступом к заявкам на компанию и уровнем поддержки.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Можно ли сменить тариф позже?</summary>
+        <p>Да, администратор может изменить тариф в админке в профиле пользователя.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Кому подходит тариф «Средний»?</summary>
+        <p>Малому бизнесу и командам, которым нужна регулярная автоматизация и заявки на компанию.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="container cta__row">
+    <div>
+      <p class="section-badge section-badge--soft">Старт</p>
+      <h2>Готовы начать работу с AdWeave?</h2>
+      <p>Создайте аккаунт, выберите тариф и начните автоматизацию маркетинга в Threads.</p>
+    </div>
+    <div class="cta__actions">
+      <a class="btn btn--primary" href="{% url 'accounts:register' %}">Начать бесплатно</a>
+      <a class="btn btn--dark" href="{% url 'company_application_create' %}">Оставить заявку</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Заявка на подключение — AdWeave{% endblock %}
+
+{% block content %}
+<section class="auth">
+  <div class="container">
+    <div class="auth__card auth__card--wide">
+      <h1 class="auth__title">Заявка на подключение компании</h1>
+      <p class="auth__lead">Заполните данные компании. Заявка уйдет администраторам на проверку.</p>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="form-errors-block">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div class="form-grid">
+          {% for field in form %}
+            <div class="form-row">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}
+                <div class="form-errors-inline">{{ field.errors }}</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+
+        <button class="btn btn--primary" type="submit">Отправить заявку</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

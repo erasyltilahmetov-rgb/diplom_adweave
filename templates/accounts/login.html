@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Вход — AdWeave{% endblock %}
+
+{% block content %}
+<section class="auth">
+  <div class="container">
+    <div class="auth__card">
+      <h1 class="auth__title">Вход</h1>
+      <p class="auth__lead">Войдите, чтобы управлять кампаниями и публикациями.</p>
+
+      {% if form.non_field_errors %}
+        <div class="form-errors-block">{{ form.non_field_errors }}</div>
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="form-row">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+              <div class="form-errors-inline">{{ field.errors }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+        <button class="btn btn--primary" type="submit">Войти</button>
+      </form>
+
+      <p class="auth__footer">
+        Нет аккаунта? <a href="{% url 'accounts:register' %}">Создать</a>
+      </p>
+    </div>
+  </div>
+</section>
+{% endblock %}

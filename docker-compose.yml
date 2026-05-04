@@ -1,0 +1,82 @@
+version: "3.9"
+
+services:
+
+  # ── Django App ─────────────────────────────────────────────
+  web:
+    build: .
+    container_name: adweave_web
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings
+      - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
+      - OLLAMA_URL=http://ollama:11434/api/generate
+      - OLLAMA_MODEL=llama3.1:8b
+      - THREADS_DB_PATH=/data/posts.db
+    env_file:
+      - .env
+    volumes:
+      - ./db.sqlite3:/app/db.sqlite3
+      - ./posts_dataset.db:/data/posts.db:ro
+      - adweave_static:/app/staticfiles
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+  # ── Ollama (AI) ────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: adweave_ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    # Раскомментируй если есть NVIDIA GPU:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # ── Ollama model loader (запускается один раз) ─────────────
+  ollama-loader:
+    image: ollama/ollama:latest
+    container_name: adweave_ollama_loader
+    restart: "no"
+    volumes:
+      - ollama_models:/root/.ollama
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "
+        echo 'Скачиваю модель llama3.1:8b...' &&
+        OLLAMA_HOST=http://ollama:11434 ollama pull llama3.1:8b &&
+        echo 'Модель готова!'
+      "
+
+  # ── Cloudflare Tunnel (HTTPS + публичный URL) ─────────────
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: adweave_tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - web
+    profiles:
+      - tunnel
+
+volumes:
+  ollama_models:
+  adweave_static:

@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+
+{% block title %}Мониторинг — AdWeave{% endblock %}
+
+{% block content %}
+<section class="dashboard monitoring-page">
+  <div class="container">
+    <div class="dashboard__header">
+      <div>
+        <h1 class="dashboard__title" data-i18n="mon.title">Мониторинг Threads</h1>
+        <p class="dashboard__subtitle" data-i18n="mon.subtitle">Упоминания, ответы, поиск и топ‑темы.</p>
+      </div>
+      <div class="dashboard__actions">
+        <form method="post" action="{% url 'dashboard_sync' %}">
+          {% csrf_token %}
+          <button class="btn btn--primary" type="submit" data-i18n="mon.sync">Синхронизировать</button>
+        </form>
+        <a class="btn btn--outline" href="{% url 'history' %}" data-i18n="mon.history">История</a>
+      </div>
+    </div>
+
+    {% if not monitoring_ready %}
+      <div class="notice-card notice-card--warn">
+        <p class="notice-card__title">Нет токена для мониторинга</p>
+        <p class="notice-card__text">Подключите Threads‑аккаунт и попробуйте снова.</p>
+        <div class="notice-card__actions">
+          <a class="btn btn--primary btn--small" href="{% url 'accounts' %}">К аккаунтам</a>
+        </div>
+      </div>
+    {% endif %}
+
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:16px;margin-bottom:16px">
+    <div class="panel">
+      <h2 class="panel__title" data-i18n="mon.account">Аккаунт для мониторинга</h2>
+      <form method="post" class="compose-fields">
+        {% csrf_token %}
+        <div class="form-row">
+          <label for="account_id">Threads‑аккаунт</label>
+          <select id="account_id" name="account_id">
+            {% for acc in accounts %}
+              <option value="{{ acc.id }}" {% if selected_account_id == acc.id %}selected{% endif %}>@{{ acc.username }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="compose-actions">
+          <button class="btn btn--outline btn--small" name="action" value="fetch_threads" type="submit" {% if not monitoring_ready %}disabled{% endif %}data-i18n="mon.loadposts">Загрузить посты</button>
+          <button class="btn btn--primary btn--small" name="action" value="top_topics" type="submit" {% if not monitoring_ready %}disabled{% endif %}data-i18n="mon.toptopics">Топ‑темы</button>
+        </div>
+      </form>
+
+      {% if threads_feed %}
+        <div class="monitor-results">
+          {% for item in threads_feed|slice:":10" %}
+            <article class="monitor-item">
+              <p class="monitor-item__title">@{{ item.username|default:"me" }}</p>
+              <p class="monitor-item__text">{{ item.text|default:"Без текста"|truncatechars:160 }}</p>
+              {% if item.permalink %}
+                <a class="panel__link" href="{{ item.permalink }}" target="_blank" rel="noreferrer">Открыть</a>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if top_topics %}
+        <div class="topic-list">
+          {% for topic, count in top_topics %}
+            <span class="topic-chip">{{ topic }} · {{ count }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    <section class="panel" id="trending-widget">
+      <div class="panel__head">
+        <h2 class="panel__title">
+          🔥 <span data-i18n="mon.trending">Трендовые темы в Threads</span>
+          <span id="trending-status" style="font-size:.75rem;font-weight:400;color:#888;margin-left:8px">из базы</span>
+        </h2>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn--outline btn--small" onclick="loadTrending(false)" id="btn-db">База</button>
+          <button class="btn btn--primary btn--small" onclick="loadTrending(true)" id="btn-live">⚡ Live Threads</button>
+        </div>
+      </div>
+      <!-- Языковые фильтры -->
+      <div style="display:flex;gap:6px;margin-bottom:12px" id="lang-tabs">
+        <button onclick="setLang('all')" class="lang-tab lang-tab--active" data-lang="all">Все</button>
+        <button onclick="setLang('ru')" class="lang-tab" data-lang="ru">🇷🇺 RU</button>
+        <button onclick="setLang('kz')" class="lang-tab" data-lang="kz">🇰🇿 KZ</button>
+        <button onclick="setLang('en')" class="lang-tab" data-lang="en">🌐 EN</button>
+      </div>
+
+      <div id="trending-content" style="min-height:80px;display:flex;align-items:center;justify-content:center">
+        <p style="color:#888">Загрузка...</p>
+      </div>
+    </section>
+    </div><!-- end grid -->
+
+    <div class="panel">
+      <h2 class="panel__title" data-i18n="mon.trends_kw">Тренды по ключевым словам</h2>
+      <p class="dashboard__subtitle">Введи список ниш/тем. Мы соберём посты и покажем топ‑темы.</p>
+      {% if search_unavailable %}
+        <div class="notice-card notice-card--warn">
+          <p class="notice-card__title">Поиск временно недоступен</p>
+          <p class="notice-card__text">{{ search_unavailable_message }}</p>
+        </div>
+      {% endif %}
+      <form method="post" class="compose-fields">
+        {% csrf_token %}
+        <input type="hidden" name="account_id" value="{{ selected_account_id }}">
+        <div class="form-row">
+          <label for="trend_keywords">Ключевые слова (через запятую или с новой строки)</label>
+          <textarea id="trend_keywords" name="trend_keywords" rows="4" placeholder="маркетинг\nбизнес\nстартап">{{ trend_keywords_raw }}</textarea>
+        </div>
+        <div class="compose-actions">
+          <button class="btn btn--primary btn--small" name="action" value="trend_scan" type="submit" {% if not monitoring_ready %}disabled{% endif %}data-i18n="mon.collect">Собрать тренды</button>
+        </div>
+      </form>
+
+      {% if trend_topics %}
+        <div class="topic-list">
+          {% for topic, count in trend_topics %}
+            <span class="topic-chip">{{ topic }} · {{ count }}</span>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if trend_results %}
+        <div class="monitor-results">
+          {% for item in trend_results|slice:":10" %}
+            <article class="monitor-item">
+              <p class="monitor-item__title">@{{ item.username|default:"unknown" }}</p>
+              <p class="monitor-item__text">{{ item.text|default:"Без текста"|truncatechars:160 }}</p>
+              {% if item.permalink %}
+                <a class="panel__link" href="{{ item.permalink }}" target="_blank" rel="noreferrer">Открыть</a>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="monitor-grid">
+      <section class="panel">
+        <h2 class="panel__title" data-i18n="mon.search_kw">Поиск по ключевым словам</h2>
+        {% if search_unavailable %}
+          <div class="notice-card notice-card--warn">
+            <p class="notice-card__text">{{ search_unavailable_message }}</p>
+          </div>
+        {% endif %}
+        <form method="post" class="compose-fields">
+          {% csrf_token %}
+          <input type="hidden" name="account_id" value="{{ selected_account_id }}">
+          <div class="form-row">
+            <label for="keyword_query">Ключевое слово</label>
+            <input id="keyword_query" name="keyword_query" value="{{ keyword_query }}" placeholder="например, adweave">
+          </div>
+          <div class="compose-actions">
+            <button class="btn btn--primary btn--small" type="submit" {% if not monitoring_ready %}disabled{% endif %} data-i18n="mon.search_btn">Искать</button>
+          </div>
+        </form>
+
+        {% if keyword_results %}
+          <div class="monitor-results">
+            {% for item in keyword_results %}
+              <article class="monitor-item">
+                <p class="monitor-item__title">@{{ item.username|default:"unknown" }}</p>
+                <p class="monitor-item__text">{{ item.text|default:"Без текста"|truncatechars:160 }}</p>
+                {% if item.permalink %}
+                  <a class="panel__link" href="{{ item.permalink }}" target="_blank" rel="noreferrer">Открыть</a>
+                {% endif %}
+              </article>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </section>
+
+      <section class="panel">
+        <h2 class="panel__title" data-i18n="mon.search_profile">Поиск профиля</h2>
+        {% if search_unavailable %}
+          <div class="notice-card notice-card--warn">
+            <p class="notice-card__text">{{ search_unavailable_message }}</p>
+          </div>
+        {% endif %}
+        <form method="post" class="compose-fields">
+          {% csrf_token %}
+          <input type="hidden" name="account_id" value="{{ selected_account_id }}">
+          <div class="form-row">
+            <label for="profile_username">Username</label>
+            <input id="profile_username" name="profile_username" value="{{ profile_username }}" placeholder="username">
+          </div>
+          <div class="compose-actions">
+            <button class="btn btn--primary btn--small" type="submit" {% if not monitoring_ready %}disabled{% endif %} data-i18n="mon.find_btn">Найти</button>
+          </div>
+        </form>
+
+        {% if profile_result %}
+          <div class="monitor-item">
+            <p class="monitor-item__title">@{{ profile_result.username|default:"unknown" }}</p>
+            <p class="monitor-item__text">
+              Подписчики: {{ profile_result.followers_count|default:"—" }} · Постов: {{ profile_result.threads_count|default:"—" }}
+            </p>
+          </div>
+        {% endif %}
+      </section>
+    </div>
+
+    <div class="panel-grid panel-grid--triple">
+      <section class="panel">
+        <h2 class="panel__title" data-i18n="mon.mentions">Последние упоминания</h2>
+        {% if mentions %}
+          <div class="list">
+            {% for mention in mentions %}
+              <article class="list-item">
+                <div>
+                  <p class="list-item__title">@{{ mention.username|default:"unknown" }}</p>
+                  <p class="list-item__meta">{{ mention.text|default:"Без текста"|truncatechars:120 }}</p>
+                </div>
+                <span class="badge">@{{ mention.account.username }}</span>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="empty" data-i18n="mon.no_mentions">Упоминаний пока нет.</p>
+        {% endif %}
+      </section>
+
+      <section class="panel panel--span-2">
+        <h2 class="panel__title" data-i18n="mon.replies">Последние ответы</h2>
+        {% if replies %}
+          <div class="list">
+            {% for reply in replies %}
+              <article class="list-item">
+                <div>
+                  <p class="list-item__title">@{{ reply.username|default:"unknown" }}</p>
+                  <p class="list-item__meta">{{ reply.text|default:"Без текста"|truncatechars:160 }}</p>
+                </div>
+                <span class="badge">{{ reply.post.title|default:"пост" }}</span>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="empty" data-i18n="mon.no_replies">Ответов пока нет.</p>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+</section>
+
+<style>
+.lang-tab {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: .8rem;
+  color: #888;
+  cursor: pointer;
+  transition: all .2s;
+}
+.lang-tab:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+.lang-tab--active { background: #6d63ff22; border-color: #6d63ff88; color: #6d63ff; font-weight: 600; }
+</style>
+
+<script>
+let currentLang = 'all';
+let currentLive = false;
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-tab').forEach(t => {
+    t.classList.toggle('lang-tab--active', t.dataset.lang === lang);
+  });
+  loadTrending(currentLive);
+}
+
+async function loadTrending(live) {
+  currentLive = live;
+  const content = document.getElementById('trending-content');
+  const status = document.getElementById('trending-status');
+  const btnLive = document.getElementById('btn-live');
+  const btnDb = document.getElementById('btn-db');
+
+  content.innerHTML = '<p style="color:#888">' + (live ? '⚡ Скраплю Threads (~30 сек)...' : 'Загружаю...') + '</p>';
+  btnLive.disabled = true;
+  btnDb.disabled = true;
+
+  try {
+    let url = '/ai/trending/?lang=' + currentLang + '&t=' + Date.now();
+    if (live) url += '&live=1';
+    const resp = await fetch(url);
+    const data = await resp.json();
+
+    if (data.error) { content.innerHTML = '<p style="color:#f87171">' + data.error + '</p>'; return; }
+    status.textContent = live ? '⚡ живые данные' : 'из базы данных';
+
+    if (!data.topics || !data.topics.length) {
+      content.innerHTML = '<p style="color:#888">Тем не найдено для выбранного языка</p>';
+      return;
+    }
+
+    const max = data.topics[0].count;
+    const colors = {ru:'#6d63ff', kz:'#22c55e', en:'#38bdf8', other:'#888'};
+
+    let html = '<div style="display:flex;flex-wrap:wrap;gap:10px;padding:4px 0">';
+    data.topics.forEach((t, i) => {
+      const size = Math.max(0.78, Math.min(1.35, 0.78 + (t.count/max)*0.57));
+      const color = colors[t.lang] || '#888';
+      const opacity = Math.max(0.5, t.count/max);
+      html += `<div style="background:rgba(255,255,255,0.05);border:1px solid ${color}44;border-radius:20px;padding:6px 14px;cursor:default;opacity:${opacity};transition:all .2s"
+        onmouseover="this.style.background='${color}22';this.style.opacity=1"
+        onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.opacity=${opacity}"
+        title="${t.count} упоминаний">
+        <span style="font-size:${size}rem;color:${color};font-weight:${i<3?700:400}">${t.word}</span>
+        <span style="font-size:.7rem;color:#555;margin-left:4px">${t.count}</span>
+      </div>`;
+    });
+    html += '</div>';
+    content.innerHTML = html;
+  } catch(e) {
+    content.innerHTML = '<p style="color:#f87171">Ошибка: ' + e.message + '</p>';
+  } finally {
+    btnLive.disabled = false;
+    btnDb.disabled = false;
+  }
+}
+
+loadTrending(false);
+</script>
+
+<script>
+(function() {
+  var T = {
+    ru: {"mon.title":"Мониторинг Threads","mon.subtitle":"Упоминания, ответы, поиск и топ‑темы.","mon.sync":"Синхронизировать","mon.history":"История","mon.account":"Аккаунт для мониторинга","mon.loadposts":"Загрузить посты","mon.toptopics":"Топ‑темы","mon.trending":"Трендовые темы в Threads","mon.trends_kw":"Тренды по ключевым словам","mon.collect":"Собрать тренды","mon.search_kw":"Поиск по ключевым словам","mon.search_profile":"Поиск профиля","mon.search_btn":"Искать","mon.find_btn":"Найти","mon.mentions":"Последние упоминания","mon.replies":"Последние ответы","mon.no_mentions":"Упоминаний пока нет.","mon.no_replies":"Ответов пока нет."},
+    en: {"mon.title":"Threads Monitoring","mon.subtitle":"Mentions, replies, search and top topics.","mon.sync":"Synchronize","mon.history":"History","mon.account":"Monitoring account","mon.loadposts":"Load posts","mon.toptopics":"Top topics","mon.trending":"Trending Topics in Threads","mon.trends_kw":"Keyword trends","mon.collect":"Collect trends","mon.search_kw":"Keyword search","mon.search_profile":"Profile search","mon.search_btn":"Search","mon.find_btn":"Find","mon.mentions":"Recent mentions","mon.replies":"Recent replies","mon.no_mentions":"No mentions yet.","mon.no_replies":"No replies yet."},
+    kz: {"mon.title":"Threads Мониторингі","mon.subtitle":"Еске алулар, жауаптар, іздеу және топ тақырыптар.","mon.sync":"Синхрондау","mon.history":"Тарих","mon.account":"Мониторинг аккаунты","mon.loadposts":"Жазбаларды жүктеу","mon.toptopics":"Топ тақырыптар","mon.trending":"Threads трендтік тақырыптары","mon.trends_kw":"Кілт сөз трендтері","mon.collect":"Трендтерді жинау","mon.search_kw":"Кілт сөз бойынша іздеу","mon.search_profile":"Профиль іздеу","mon.search_btn":"Іздеу","mon.find_btn":"Табу","mon.mentions":"Соңғы еске алулар","mon.replies":"Соңғы жауаптар","mon.no_mentions":"Еске алулар жоқ.","mon.no_replies":"Жауаптар жоқ."}
+  };
+
+  function applyMon(lang) {
+    var d = T[lang] || T.ru;
+    document.querySelectorAll('[data-i18n]').forEach(function(el) {
+      var k = el.getAttribute('data-i18n');
+      if (d[k]) el.textContent = d[k];
+    });
+  }
+
+  // Применяем сразу (DOM уже готов — скрипт в конце страницы)
+  applyMon(localStorage.getItem('adweave-lang') || document.documentElement.lang || 'ru');
+
+  // Вешаем на тот же select
+  var sel = document.getElementById('langSelect');
+  if (sel) sel.addEventListener('change', function(e) { applyMon(e.target.value); });
+})();
+</script>
+{% endblock %}

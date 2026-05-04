@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Права и функции — AdWeave{% endblock %}
+
+{% block content %}
+<section class="dashboard permissions-page">
+  <div class="container">
+    <div class="dashboard__header">
+      <div>
+        <h1 class="dashboard__title">Права и функции Threads</h1>
+        <p class="dashboard__subtitle">Связь разрешений Threads и функций в AdWeave.</p>
+      </div>
+      <div class="dashboard__actions">
+        <a class="btn btn--primary" href="{% url 'monitoring' %}">Мониторинг</a>
+        <a class="btn btn--outline" href="{% url 'dashboard' %}">Дашборд</a>
+      </div>
+    </div>
+
+    <div class="notice-card">
+      <p class="notice-card__title">Сконфигурированные scopes</p>
+      {% if configured_scopes %}
+        <div class="permission-tags">
+          {% for scope in configured_scopes %}
+            <span class="permission-tag">{{ scope }}</span>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="notice-card__text">THREADS_SCOPES не задан в .env.</p>
+      {% endif %}
+    </div>
+
+    <div class="permission-grid">
+      {% for perm in permissions %}
+        <article class="permission-card">
+          <div class="permission-card__head">
+            <div>
+              <h3>{{ perm.name }}</h3>
+              <p class="permission-card__code">{{ perm.code }}</p>
+            </div>
+            {% if perm.code in configured_scopes %}
+              <span class="badge">В scope</span>
+            {% else %}
+              <span class="badge badge--muted">Не в scope</span>
+            {% endif %}
+          </div>
+          <p class="permission-card__desc">{{ perm.desc }}</p>
+          <p class="permission-card__feature">Функция: {{ perm.feature }}</p>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

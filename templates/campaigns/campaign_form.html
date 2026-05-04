@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{% if mode == 'edit' %}Редактирование кампании{% else %}Новая кампания{% endif %} — AdWeave{% endblock %}
+
+{% block content %}
+<section class="dashboard">
+  <div class="container" style="max-width: 820px;">
+    <div class="dashboard__header">
+      <div>
+        <h1 class="dashboard__title">{% if mode == 'edit' %}Редактирование кампании{% else %}Новая кампания{% endif %}</h1>
+        <p class="dashboard__subtitle">Заполните поля и сохраните кампанию.</p>
+      </div>
+      <div class="dashboard__actions">
+        <a class="btn btn--outline" href="{% url 'campaigns:list' %}">Назад</a>
+      </div>
+    </div>
+
+    <section class="panel accounts-panel">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="form-errors-block">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="compose-fields">
+          {% for field in form %}
+            <div class="form-row">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {% if field.errors %}
+                <div class="form-errors-inline">{{ field.errors }}</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+        <div class="compose-actions">
+          <button class="btn btn--primary" type="submit">Сохранить</button>
+          <a class="btn btn--outline" href="{% url 'campaigns:list' %}">Отмена</a>
+        </div>
+      </form>
+    </section>
+  </div>
+</section>
+{% endblock %}

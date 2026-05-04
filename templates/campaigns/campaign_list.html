@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Кампании — AdWeave{% endblock %}
+
+{% block content %}
+<section class="dashboard campaigns-page">
+  <div class="container">
+    <div class="dashboard__header">
+      <div>
+        <h1 class="dashboard__title">Кампании</h1>
+        <p class="dashboard__subtitle">Создавайте, редактируйте и управляйте своими кампаниями.</p>
+      </div>
+      <div class="dashboard__actions">
+        <a class="btn btn--primary" href="{% url 'campaigns:create' %}">Новая кампания</a>
+      </div>
+    </div>
+
+    {% if campaigns %}
+      <div class="campaign-grid">
+        {% for campaign in campaigns %}
+          <article class="campaign-card">
+            <div class="campaign-card__top">
+              <h3 class="campaign-card__title">{{ campaign.name }}</h3>
+              <span class="badge">{{ campaign.get_status_display }}</span>
+            </div>
+            <p class="campaign-card__desc">{{ campaign.description|default:"Без описания"|truncatechars:160 }}</p>
+            <p class="campaign-card__meta">
+              {% if campaign.start_date %}{{ campaign.start_date|date:"d.m.Y" }}{% else %}—{% endif %}
+              —
+              {% if campaign.end_date %}{{ campaign.end_date|date:"d.m.Y" }}{% else %}—{% endif %}
+            </p>
+            <div class="campaign-card__actions">
+              <a class="btn btn--outline btn--small" href="{% url 'campaigns:edit' campaign.id %}">Редактировать</a>
+              <a class="btn btn--ghost btn--small" href="{% url 'campaigns:delete' campaign.id %}">Удалить</a>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="notice-card">
+        <p class="notice-card__title">Пока нет кампаний</p>
+        <p class="notice-card__text">Создайте первую кампанию, и она появится в списке.</p>
+        <a class="btn btn--primary" href="{% url 'campaigns:create' %}">Создать кампанию</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

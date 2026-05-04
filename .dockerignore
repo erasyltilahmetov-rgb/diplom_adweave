@@ -1,0 +1,12 @@
+.venv
+venv
+__pycache__
+*.pyc
+*.pyo
+.git
+.gitignore
+*.rar
+*.docx
+node_modules
+.env.local
+staticfiles

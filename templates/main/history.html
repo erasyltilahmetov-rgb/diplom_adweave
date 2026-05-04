@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}История постов — AdWeave{% endblock %}
+
+{% block content %}
+<section class="dashboard history-page">
+  <div class="container">
+    <div class="dashboard__header">
+      <div>
+        <h1 class="dashboard__title" data-i18n="hist.title">История публикаций</h1>
+        <p class="dashboard__subtitle" data-i18n="hist.subtitle">Смотри, что уже публиковалось, и отслеживай ошибки.</p>
+      </div>
+      <div class="dashboard__actions">
+        <a class="btn btn--primary" href="{% url 'compose' %}" data-i18n="hist.new">Новый пост</a>
+        <a class="btn btn--outline" href="{% url 'posts' %}">Расписание</a>
+      </div>
+    </div>
+
+    <div class="history-grid">
+
+      <!-- Опубликованные -->
+      <section class="panel history-block">
+        <h2 class="panel__title" data-i18n="hist.published">Опубликованные</h2>
+        {% if published_posts %}
+          <div class="history-list">
+            {% for post in published_posts %}
+            <article style="
+              background:#181818;
+              border-radius:14px;
+              padding:16px;
+              border:1px solid #2e2e2e;
+              border-bottom:3px solid #16a34a33;
+              margin-bottom:12px;
+              position:relative;
+              overflow:hidden;
+            ">
+              <!-- Зелёная полоска снизу -->
+              <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#16a34a,#22c55e44)"></div>
+
+              <!-- Шапка поста -->
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                <div style="position:relative;flex-shrink:0">
+                  <div style="width:38px;height:38px;border-radius:50%;background:#3a3a3a;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;color:#fff">
+                    {{ post.user.username|slice:":1"|upper }}
+                  </div>
+                  <div style="position:absolute;bottom:-2px;right:-2px;width:16px;height:16px;background:#1877f2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;border:2px solid #181818">+</div>
+                </div>
+                <div style="flex:1">
+                  <div style="font-weight:700;font-size:.88rem;color:#fff">{{ post.user.username }}</div>
+                  <div style="font-size:.73rem;color:#888">{{ post.published_at|date:"d.m.Y H:i" }}</div>
+                </div>
+                <span style="font-size:.72rem;background:#16a34a22;color:#22c55e;border:1px solid #22c55e44;border-radius:20px;padding:3px 10px">✓ Опубликован</span>
+              </div>
+
+              <!-- Текст поста -->
+              <p style="font-size:.9rem;line-height:1.55;color:#e0e0e0;margin:0 0 12px 0;white-space:pre-wrap;word-break:break-word">{{ post.content|truncatechars:300 }}</p>
+
+              <!-- Нижняя строка: Threads ID + кнопка -->
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+                <div style="display:flex;gap:16px">
+                  <button type="button" style="background:none;border:none;cursor:pointer;color:#555;padding:0;display:flex;align-items:center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  </button>
+                  <button type="button" style="background:none;border:none;cursor:pointer;color:#555;padding:0;display:flex;align-items:center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  </button>
+                  <button type="button" style="background:none;border:none;cursor:pointer;color:#555;padding:0;display:flex;align-items:center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                  </button>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <code style="font-size:.7rem;color:#555;background:#111;padding:3px 8px;border-radius:6px">{{ post.threads_thread_id|truncatechars:16 }}</code>
+                  <a href="https://www.threads.com/@{{ post.user.username }}/post/{{ post.threads_thread_id }}" target="_blank" title="Открыть в Threads" style="color:#6d63ff;display:flex;align-items:center;text-decoration:none">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </a>
+                  <form method="post" action="{% url 'post_delete_remote' post.id %}" style="margin:0">
+                    {% csrf_token %}
+                    <button class="btn btn--ghost btn--small" type="submit">Удалить</button>
+                  </form>
+                </div>
+              </div>
+            </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="empty" data-i18n="hist.no_published">Пока нет опубликованных постов.</p>
+        {% endif %}
+      </section>
+
+      <!-- Ошибки -->
+      <section class="panel history-block">
+        <h2 class="panel__title" data-i18n="hist.errors">Ошибки публикации</h2>
+        {% if failed_posts %}
+          <div class="history-list">
+            {% for post in failed_posts %}
+            <article style="
+              background:#181818;
+              border-radius:14px;
+              padding:16px;
+              border:1px solid #2e2e2e;
+              margin-bottom:12px;
+              position:relative;
+              overflow:hidden;
+            ">
+              <!-- Красная полоска снизу -->
+              <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#dc2626,#f8717144)"></div>
+
+              <!-- Шапка поста -->
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                <div style="position:relative;flex-shrink:0">
+                  <div style="width:38px;height:38px;border-radius:50%;background:#3a3a3a;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;color:#fff">
+                    {{ post.user.username|slice:":1"|upper }}
+                  </div>
+                  <div style="position:absolute;bottom:-2px;right:-2px;width:16px;height:16px;background:#dc2626;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;border:2px solid #181818">!</div>
+                </div>
+                <div style="flex:1">
+                  <div style="font-weight:700;font-size:.88rem;color:#fff">{{ post.user.username }}</div>
+                  <div style="font-size:.73rem;color:#888">{{ post.updated_at|date:"d.m.Y H:i" }}</div>
+                </div>
+                <span style="font-size:.72rem;background:#dc262622;color:#f87171;border:1px solid #f8717144;border-radius:20px;padding:3px 10px">✗ Ошибка</span>
+              </div>
+
+              <!-- Текст поста -->
+              <p style="font-size:.9rem;line-height:1.55;color:#e0e0e0;margin:0 0 8px 0;white-space:pre-wrap;word-break:break-word">{{ post.content|truncatechars:300 }}</p>
+
+              <!-- Текст ошибки -->
+              {% if post.last_publish_error %}
+              <p style="font-size:.78rem;color:#f87171;background:#f8717111;border-radius:8px;padding:8px 12px;margin:0 0 12px 0">{{ post.last_publish_error|truncatechars:120 }}</p>
+              {% endif %}
+
+              <!-- Кнопка повторить -->
+              <div style="display:flex;justify-content:flex-end">
+                <form method="post" action="{% url 'post_publish' post.id %}" style="margin:0">
+                  {% csrf_token %}
+                  <button class="btn btn--outline btn--small" type="submit">Повторить</button>
+                </form>
+              </div>
+            </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="empty" data-i18n="hist.no_errors">Ошибок публикации не найдено.</p>
+        {% endif %}
+      </section>
+
+    </div>
+
+    <!-- Черновики -->
+    <div class="table-card">
+      <h2 class="table-card__title" data-i18n="hist.drafts">Черновики и готовые</h2>
+      {% if draft_posts %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Пост</th>
+              <th>Кампания</th>
+              <th>Статус</th>
+              <th>Обновлено</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for post in draft_posts %}
+              <tr>
+                <td>{{ post.title|default:"Без заголовка" }}</td>
+                <td>{{ post.campaign.name }}</td>
+                <td>{{ post.get_status_display }}</td>
+                <td>{{ post.updated_at|date:"d.m.Y H:i" }}</td>
+                <td class="table__actions">
+                  <form method="post" action="{% url 'post_publish' post.id %}">
+                    {% csrf_token %}
+                    <button class="btn btn--primary btn--small" type="submit">Опубликовать</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="empty" data-i18n="hist.no_drafts">Черновиков нет.</p>
+      {% endif %}
+    </div>
+
+  </div>
+</section>
+{% endblock %}

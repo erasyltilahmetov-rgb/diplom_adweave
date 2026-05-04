@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Дашборд — AdWeave{% endblock %}
+
+{% block content %}
+<section class="dashboard">
+  <div class="container">
+    <div class="dashboard__header">
+      <div>
+        <h1 class="dashboard__title" data-i18n="dash.title">Дашборд</h1>
+        <p class="dashboard__subtitle" data-i18n="dash.subtitle">Ключевые показатели, аналитика и мониторинг Threads.</p>
+      </div>
+      <div class="dashboard__actions">
+        <form method="post" action="{% url 'dashboard_sync' %}" class="dashboard__sync-form">
+          {% csrf_token %}
+          <button class="btn btn--primary" type="submit" data-i18n="dash.sync">Синхронизировать Threads</button>
+        </form>
+        <a class="btn btn--outline" href="{% url 'campaigns:list' %}" data-i18n="dash.campaigns">Все кампании</a>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <article class="stat-card">
+        <span class="stat-card__label" data-i18n="dash.stat.campaigns">Кампаний всего</span>
+        <span class="stat-card__value">{{ stats.campaigns_total }}</span>
+      </article>
+      <article class="stat-card">
+        <span class="stat-card__label" data-i18n="dash.stat.active">Активных кампаний</span>
+        <span class="stat-card__value">{{ stats.campaigns_active }}</span>
+      </article>
+      <article class="stat-card">
+        <span class="stat-card__label" data-i18n="dash.stat.posts">Постов</span>
+        <span class="stat-card__value">{{ stats.posts_total }}</span>
+      </article>
+      <article class="stat-card">
+        <span class="stat-card__label" data-i18n="dash.stat.accounts">Threads-аккаунтов</span>
+        <span class="stat-card__value">{{ stats.accounts_total }}</span>
+      </article>
+      <article class="stat-card">
+        <span class="stat-card__label" data-i18n="dash.stat.mentions">Упоминаний</span>
+        <span class="stat-card__value">{{ stats.mentions_total }}</span>
+      </article>
+      <article class="stat-card">
+        <span class="stat-card__label" data-i18n="dash.stat.replies">Ответов</span>
+        <span class="stat-card__value">{{ stats.replies_total }}</span>
+      </article>
+    </div>
+
+    <div class="panel-grid">
+      <section class="panel">
+        <div class="panel__head">
+          <h2 class="panel__title" data-i18n="dash.analytics">Аналитика профилей</h2>
+          <a class="panel__link" href="{% url 'analytics' %}">Подробнее</a>
+        </div>
+        {% if latest_profile_analytics %}
+          <div class="list">
+            {% for snap in latest_profile_analytics %}
+              <article class="list-item">
+                <div>
+                  <p class="list-item__title">@{{ snap.account.username }}</p>
+                  <p class="list-item__meta">
+                    Просмотры: {{ snap.views }} · Подписчики: {{ snap.followers }} · Постов: {{ snap.threads_count }}
+                  </p>
+                </div>
+                <span class="badge">{{ snap.captured_at|date:"d.m.Y H:i" }}</span>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="empty">Пока нет аналитики профиля. Нажмите «Синхронизировать Threads».</p>
+        {% endif %}
+      </section>
+
+      <section class="panel">
+        <div class="panel__head">
+          <h2 class="panel__title" data-i18n="dash.scheduled">Ближайшие публикации</h2>
+          <a class="panel__link" href="{% url 'posts' %}" data-i18n="dash.to_schedule">К расписанию</a>
+        </div>
+        {% if scheduled_posts %}
+          <div class="list">
+            {% for schedule in scheduled_posts %}
+              <article class="list-item">
+                <div>
+                  <p class="list-item__title">{{ schedule.post.title|default:"Пост без заголовка" }}</p>
+                  <p class="list-item__meta">
+                    {{ schedule.post.campaign.name }} · {{ schedule.scheduled_for|date:"d.m.Y H:i" }}
+                  </p>
+                </div>
+                <span class="badge">{{ schedule.get_status_display }}</span>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="empty" data-i18n="dash.no_scheduled">Пока нет запланированных публикаций.</p>
+        {% endif %}
+      </section>
+    </div>
+
+    <div class="panel-grid panel-grid--triple">
+      <section class="panel">
+        <div class="panel__head">
+          <h2 class="panel__title" data-i18n="dash.recent">Последние посты</h2>
+          <a class="panel__link" href="{% url 'history' %}">История</a>
+        </div>
+        {% if recent_posts %}
+          <div class="list">
+            {% for post in recent_posts %}
+              <article class="list-item">
+                <div>
+                  <p class="list-item__title">{{ post.title|default:"Пост без заголовка" }}</p>
+                  <p class="list-item__meta">{{ post.campaign.name }} · {{ post.threads_account.username }}</p>
+                </div>
+                <span class="badge">{{ post.get_status_display }}</span>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="empty" data-i18n="dash.no_posts">У вас пока нет постов.</p>
+        {% endif %}
+      </section>
+
+      <section class="panel">
+        <div class="panel__head">
+          <h2 class="panel__title" data-i18n="dash.mentions">Упоминания</h2>
+          <a class="panel__link" href="{% url 'monitoring' %}">Мониторинг</a>
+        </div>
+        {% if latest_mentions %}
+          <div class="list">
+            {% for mention in latest_mentions %}
+              <article class="list-item">
+                <div>
+                  <p class="list-item__title">@{{ mention.username|default:"unknown" }}</p>
+                  <p class="list-item__meta">{{ mention.text|default:"Без текста"|truncatechars:90 }}</p>
+                </div>
+                <span class="badge">@{{ mention.account.username }}</span>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="empty" data-i18n="dash.no_mentions">Упоминаний пока нет.</p>
+        {% endif %}
+      </section>
+
+      <section class="panel">
+        <div class="panel__head">
+          <h2 class="panel__title" data-i18n="dash.replies">Ответы</h2>
+          <a class="panel__link" href="{% url 'monitoring' %}">Ответы</a>
+        </div>
+        {% if latest_replies %}
+          <div class="list">
+            {% for reply in latest_replies %}
+              <article class="list-item">
+                <div>
+                  <p class="list-item__title">@{{ reply.username|default:"unknown" }}</p>
+                  <p class="list-item__meta">{{ reply.text|default:"Без текста"|truncatechars:90 }}</p>
+                </div>
+                <span class="badge">{{ reply.post.title|default:"пост" }}</span>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="empty" data-i18n="dash.no_replies">Ответов пока нет.</p>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+
+</div>
+</section>
+{% endblock %}

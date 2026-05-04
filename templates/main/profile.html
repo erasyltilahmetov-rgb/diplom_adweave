@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Профиль — AdWeave{% endblock %}
+
+{% block content %}
+<section class="dashboard profile">
+  <div class="container">
+    <div class="dashboard__header">
+      <div>
+        <h1 class="dashboard__title">Профиль</h1>
+        <p class="dashboard__subtitle">Информация о пользователе и связанных компаниях.</p>
+      </div>
+      <div class="dashboard__actions">
+        {% if is_admin %}
+          <a class="btn btn--outline" href="/admin/">Админка</a>
+        {% endif %}
+        {% if user_can_apply_company %}
+          <a class="btn btn--primary" href="{% url 'company_application_create' %}">Подключить компанию</a>
+        {% else %}
+          <a class="btn btn--primary" href="{% url 'pricing' %}">Повысить тариф</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="panel-grid">
+      <section class="panel profile-card">
+        <div class="profile-card__top">
+          <div class="profile-card__avatar">{{ request.user.username|slice:":1"|upper }}</div>
+          <div>
+            <h2 class="panel__title">{{ request.user.username }}</h2>
+            <p class="dashboard__subtitle">{{ request.user.email|default:"Email не указан" }}</p>
+          </div>
+        </div>
+        <div class="profile-card__meta">
+          {% if user_role_code == 'admin' %}
+            <span class="role-badge role-badge--admin">admin</span>
+          {% elif user_role_code == 'support' %}
+            <span class="role-badge role-badge--support">support</span>
+          {% else %}
+            <span class="role-badge role-badge--user">user</span>
+          {% endif %}
+          <span class="plan-badge plan-badge--{{ user_plan_code }}">{{ user_plan_label }}</span>
+          {% if request.user.is_superuser %}
+            <span class="badge">superuser</span>
+          {% endif %}
+        </div>
+        <div class="profile-card__details">
+          <div class="profile-detail">
+            <strong>Лимит автопубликаций</strong>
+            <span>{{ user_daily_threads_limit }} / день</span>
+          </div>
+          <div class="profile-detail">
+            <strong>Заявка на компанию</strong>
+            <span>{% if user_can_apply_company %}Доступно{% else %}Недоступно на базовом тарифе{% endif %}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel__title">Мои компании</h2>
+        {% if companies %}
+          <div class="list">
+            {% for company in companies %}
+              <article class="list-item">
+                <div>
+                  <p class="list-item__title">{{ company.name }}</p>
+                  <p class="list-item__meta">ИИН/БИН: {{ company.iin_bin }}</p>
+                </div>
+                <span class="badge">Подключена</span>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="empty">У вас пока нет одобренных компаний.</p>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+</section>
+{% endblock %}

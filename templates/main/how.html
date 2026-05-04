@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Как это работает — AdWeave{% endblock %}
+
+{% block content %}
+<section class="content-page">
+  <div class="container content-page__grid">
+    <div>
+      <p class="section-badge">Процесс</p>
+      <h1 class="section-title">Как это работает</h1>
+      <p class="section-lead">
+        Подключаете компанию, создаёте кампанию, готовите контент и запускаете расписание публикаций.
+      </p>
+    </div>
+    <div class="content-page__cards">
+      <article class="content-card content-card--step">
+        <span class="content-card__step">1</span>
+        <h3>Заявка</h3>
+        <p>Оставьте заявку на подключение компании.</p>
+      </article>
+      <article class="content-card content-card--step">
+        <span class="content-card__step">2</span>
+        <h3>Одобрение</h3>
+        <p>Администратор проверяет и подтверждает данные.</p>
+      </article>
+      <article class="content-card content-card--step">
+        <span class="content-card__step">3</span>
+        <h3>Работа</h3>
+        <p>Запускаете кампании и отслеживаете результат.</p>
+      </article>
+    </div>
+  </div>
+</section>
+{% endblock %}

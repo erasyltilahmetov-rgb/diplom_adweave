@@ -1,0 +1,74 @@
+{% load static %}
+<header class="navbar navbar--guest">
+  <div class="container navbar__row">
+    <a class="navbar__brand" href="{% url 'home' %}">
+      <img class="brand-logo" src="{% static 'img/logo.png' %}" alt="AdWeave">
+      <span class="navbar__name">AdWeave</span>
+    </a>
+
+    <nav class="navbar__links" aria-label="Основная навигация">
+      {% if request.user.is_authenticated %}
+        <div class="nav-group">
+          <button class="nav-group__toggle" type="button" data-i18n="nav.work">Работа</button>
+          <div class="nav-group__menu">
+            <a href="{% url 'dashboard' %}" data-i18n="nav.dashboard">Дашборд</a>
+            <a href="{% url 'compose' %}" data-i18n="nav.compose">Compose</a>
+            <a href="{% url 'history' %}" data-i18n="nav.history">История</a>
+            <a href="{% url 'posts' %}" data-i18n="nav.schedule">Расписание</a>
+          </div>
+        </div>
+        <div class="nav-group">
+          <button class="nav-group__toggle" type="button" data-i18n="nav.manage">Управление</button>
+          <div class="nav-group__menu">
+            <a href="{% url 'campaigns:list' %}" data-i18n="nav.campaigns">Кампании</a>
+            <a href="{% url 'analytics' %}" data-i18n="nav.analytics">Аналитика</a>
+            <a href="{% url 'monitoring' %}" data-i18n="nav.monitoring">Мониторинг</a>
+            <a href="{% url 'permissions' %}" data-i18n="nav.permissions">Права</a>
+          </div>
+        </div>
+        <a class="nav-link" href="{% url 'pricing' %}" data-i18n="nav.pricing">Тарифы</a>
+      {% else %}
+        <div class="nav-group">
+          <button class="nav-group__toggle" type="button" data-i18n="nav.product">Продукт</button>
+          <div class="nav-group__menu">
+            <a href="{% url 'features' %}" data-i18n="nav.features">Возможности</a>
+            <a href="{% url 'cases' %}" data-i18n="nav.cases">Кейсы</a>
+            <a href="{% url 'how' %}" data-i18n="nav.how">Как это работает</a>
+            <a href="{% url 'contacts' %}" data-i18n="nav.contacts">Контакты</a>
+          </div>
+        </div>
+        <a class="nav-link" href="{% url 'pricing' %}" data-i18n="nav.pricing">Тарифы</a>
+        <a class="nav-link" href="{% url 'company_application_create' %}" data-i18n="nav.connectCompany">Подключить компанию</a>
+      {% endif %}
+    </nav>
+
+    <div class="navbar__actions">
+      <button class="navbar__menu-toggle" type="button" data-nav-toggle data-i18n="nav.menu">Меню</button>
+      {% if request.user.is_authenticated %}
+        <a class="navbar__user" href="{% url 'profile' %}">
+          <span class="navbar__user-name">{{ request.user.username }}</span>
+          {% if user_role_code == 'admin' %}
+            <span class="role-badge role-badge--admin">admin</span>
+          {% elif user_role_code == 'support' %}
+            <span class="role-badge role-badge--support">support</span>
+          {% else %}
+            <span class="role-badge role-badge--user">user</span>
+          {% endif %}
+          <span class="plan-badge plan-badge--{{ user_plan_code }}">{{ user_plan_label }}</span>
+        </a>
+        {% if user_can_apply_company %}
+          <a class="btn btn--outline" href="{% url 'company_application_create' %}" data-i18n="nav.company">Компания</a>
+        {% endif %}
+        <a class="btn btn--ghost" href="{% url 'accounts' %}" data-i18n="nav.accounts">Аккаунты</a>
+        <form action="{% url 'accounts:logout' %}" method="post" class="navbar__form">
+          {% csrf_token %}
+          <button class="btn btn--primary btn--logout" type="submit" data-i18n="nav.logout">Выйти</button>
+        </form>
+      {% else %}
+        <a class="btn btn--outline" href="{% url 'company_application_create' %}" data-i18n="nav.application">Заявка</a>
+        <a class="btn btn--ghost" href="{% url 'accounts:login' %}" data-i18n="nav.login">Войти</a>
+        <a class="btn btn--primary" href="{% url 'accounts:register' %}" data-i18n="nav.register">Регистрация</a>
+      {% endif %}
+    </div>
+  </div>
+</header>

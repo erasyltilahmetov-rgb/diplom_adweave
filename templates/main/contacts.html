@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Контакты — AdWeave{% endblock %}
+
+{% block content %}
+<section class="content-page">
+  <div class="container content-page__grid">
+    <div>
+      <p class="section-badge section-badge--soft">Контакты</p>
+      <h1 class="section-title">Свяжитесь с нами</h1>
+      <p class="section-lead">
+        Если хотите подключить компанию или обсудить интеграцию, напишите нам.
+      </p>
+      <div class="content-page__contacts">
+        <div class="content-contact">
+          <strong>Email</strong>
+          <span>team@adweave.local</span>
+        </div>
+        <div class="content-contact">
+          <strong>Telegram</strong>
+          <span>@adweave</span>
+        </div>
+      </div>
+    </div>
+    <div class="content-page__cards">
+      <article class="content-card">
+        <h3>Подключение</h3>
+        <p>Оставьте заявку, и администратор свяжется с вами.</p>
+        <a class="btn btn--primary" href="{% url 'company_application_create' %}">Оставить заявку</a>
+      </article>
+      <article class="content-card">
+        <h3>Админка</h3>
+        <p>Для команды проекта — доступ к управлению данными.</p>
+        <a class="btn btn--outline" href="/admin/">Перейти в админку</a>
+      </article>
+    </div>
+  </div>
+</section>
+{% endblock %}

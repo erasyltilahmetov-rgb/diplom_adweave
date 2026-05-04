@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Удаление кампании — AdWeave{% endblock %}
+
+{% block content %}
+<section class="dashboard">
+  <div class="container" style="max-width: 620px;">
+    <div class="dashboard__header">
+      <div>
+        <h1 class="dashboard__title">Удалить кампанию?</h1>
+        <p class="dashboard__subtitle">{{ campaign.name }}</p>
+      </div>
+      <div class="dashboard__actions">
+        <a class="btn btn--outline" href="{% url 'campaigns:list' %}">Назад</a>
+      </div>
+    </div>
+
+    <section class="panel">
+      <p class="empty" style="margin-bottom: 12px;">Это действие удалит кампанию и связанные с ней посты.</p>
+      <form method="post">
+        {% csrf_token %}
+        <div class="compose-actions">
+          <button class="btn btn--primary" type="submit">Удалить</button>
+          <a class="btn btn--outline" href="{% url 'campaigns:list' %}">Отмена</a>
+        </div>
+      </form>
+    </section>
+  </div>
+</section>
+{% endblock %}

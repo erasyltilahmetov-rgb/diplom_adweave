@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Compose — AdWeave{% endblock %}
+
+{% block extra_head %}
+<style>
+/* Threads Post Card */
+.tp-card{background:#1a1a1a;border-radius:14px;padding:16px 16px 12px;border:1px solid #2a2a2a}
+.tp-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.tp-avatar-wrap{position:relative;flex-shrink:0}
+.tp-avatar{width:40px;height:40px;border-radius:50%;background:#3a3a3a;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;color:#fff;border:2px solid #2a2a2a}
+.tp-plus{position:absolute;bottom:-2px;right:-2px;width:16px;height:16px;background:#1877f2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;border:2px solid #1a1a1a;line-height:1}
+.tp-meta{flex:1;display:flex;flex-direction:column;gap:1px}
+.tp-username{font-weight:700;font-size:.9rem;color:#fff;line-height:1.2}
+.tp-time{font-size:.78rem;color:#888}
+.tp-dots{color:#888;font-size:1.1rem;letter-spacing:1px;cursor:pointer;padding:0 4px}
+.tp-text{font-size:.9rem;line-height:1.55;color:#e8e8e8;white-space:pre-wrap;word-break:break-word;min-height:48px;margin-bottom:14px}
+.tp-text--empty{color:#555!important}
+.tp-actions{display:flex;gap:18px}
+.tp-btn{background:none;border:none;color:#888;cursor:pointer;padding:4px 0;display:flex;align-items:center;transition:color .15s}
+.tp-btn:hover{color:#ccc}
+</style>
+.form-row--toggle{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-top:1px solid rgba(255,255,255,0.06);margin-bottom:16px}
+.toggle-label{font-size:.95rem;font-weight:500;color:var(--text-muted,#aaa)}
+.toggle-switch{position:relative;display:inline-block;width:56px;height:30px;cursor:pointer}
+.toggle-switch input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;inset:0;border-radius:30px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);box-shadow:inset 0 2px 6px rgba(0,0,0,0.35);transition:background .3s,box-shadow .3s}
+.toggle-slider::before{content:'';position:absolute;width:22px;height:22px;left:4px;top:3px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,#c8c8d8);box-shadow:0 2px 6px rgba(0,0,0,0.4),inset 0 1px 2px rgba(255,255,255,0.6);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.toggle-switch input:checked+.toggle-slider{background:linear-gradient(135deg,#6d63ff,#9b5cf6);border-color:rgba(109,99,255,0.5);box-shadow:inset 0 2px 6px rgba(0,0,0,0.2),0 0 16px rgba(109,99,255,0.35)}
+.toggle-switch input:checked+.toggle-slider::before{transform:translateX(26px);background:radial-gradient(circle at 35% 35%,#fff,#e8e4ff)}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="dashboard compose-page">
+  <div class="container">
+    <div class="dashboard__header">
+      <div>
+        <h1 class="dashboard__title">Compose</h1>
+        <p class="dashboard__subtitle">Создайте пост, запланируйте его или опубликуйте сразу.</p>
+      </div>
+      <div class="dashboard__actions">
+        <a class="btn btn--outline" href="{% url 'history' %}">История</a>
+        <a class="btn btn--ghost" href="/admin/posts/post/add/">Через админку</a>
+      </div>
+    </div>
+
+    <div class="limit-card">
+      <div>
+        <p class="limit-card__title">Лимит публикаций на сегодня</p>
+        <p class="limit-card__meta">
+          Использовано: <strong>{{ published_today }}</strong> из <strong>{{ daily_limit }}</strong>.
+          Осталось: <strong>{{ remaining_publishes }}</strong>.
+        </p>
+      </div>
+      {% if publishing_blocked %}
+        <a class="btn btn--outline" href="{% url 'pricing' %}">Повысить тариф</a>
+      {% elif is_privileged %}
+        <span class="badge">Без ограничений</span>
+      {% endif %}
+    </div>
+
+    {% if not has_campaigns or not has_accounts %}
+      <div class="notice-card notice-card--warn">
+        <p class="notice-card__title">Нужно подготовить данные</p>
+        <p class="notice-card__text">
+          Для публикации нужны кампания и хотя бы один активный Threads-аккаунт.
+        </p>
+        <div class="notice-card__actions">
+          {% if not has_campaigns %}
+            <a class="btn btn--primary btn--small" href="{% url 'campaigns:create' %}">Создать кампанию</a>
+          {% endif %}
+          {% if not has_accounts %}
+            <a class="btn btn--outline btn--small" href="{% url 'accounts' %}">Подключить аккаунт</a>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="compose-grid">
+      <section class="panel compose-form">
+        <h2 class="panel__title">Параметры публикации</h2>
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="form-errors-block">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <div class="compose-fields">
+            {% for field in form %}
+              {% if field.name != 'publish_now' and field.name != 'scheduled_for' %}
+              <div class="form-row">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                  <div class="form-errors-inline">{{ field.errors }}</div>
+                {% endif %}
+              </div>
+              {% endif %}
+            {% endfor %}
+
+            {# Запланировать на #}
+            <div class="form-row">
+              <label for="{{ form.scheduled_for.id_for_label }}">{{ form.scheduled_for.label }}</label>
+              {{ form.scheduled_for }}
+              {% if form.scheduled_for.errors %}
+                <div class="form-errors-inline">{{ form.scheduled_for.errors }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          {# Тогл "Опубликовать сразу" #}
+          <div class="form-row form-row--toggle">
+            <span class="toggle-label">Опубликовать сразу</span>
+            <label class="toggle-switch">
+              <input type="checkbox" name="publish_now" id="id_publish_now">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="compose-actions">
+            <button class="btn btn--primary" type="submit" {% if not has_campaigns or not has_accounts %}disabled{% endif %}>
+              Сохранить
+            </button>
+            <button class="btn btn--outline" type="button" id="ai-rewrite-btn" onclick="aiRewrite()">
+              ✨ AI Оптимизация
+            </button>
+            <a class="btn btn--outline" href="{% url 'posts' %}">Расписание</a>
+          </div>
+        </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const textarea = document.querySelector('textarea[name="content"]');
+  const previewText = document.getElementById('preview-text');
+
+  if (!textarea || !previewText) {
+    console.warn('Live preview: элементы не найдены', textarea, previewText);
+    return;
+  }
+
+  textarea.addEventListener('input', function() {
+    const val = this.value.trim();
+    if (val) {
+      previewText.textContent = val;
+      previewText.style.color = '#e0e0e0';
+    } else {
+      previewText.textContent = 'Начните вводить текст поста...';
+      previewText.style.color = '#555';
+    }
+  });
+});
+
+async function aiRewrite() {
+  const btn = document.getElementById('ai-rewrite-btn');
+  const textarea = document.querySelector('textarea[name="content"]');
+
+  if (!textarea || !textarea.value.trim()) {
+    alert('Введите текст поста перед AI-оптимизацией');
+    return;
+  }
+
+  btn.textContent = '⏳ Генерирую...';
+  btn.disabled = true;
+
+  try {
+    const resp = await fetch('/ai/rewrite/', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({text: textarea.value, language: 'ru'}),
+    });
+    const data = await resp.json();
+    if (data.result) {
+      textarea.value = data.result;
+      const prev = document.getElementById('preview-text');
+      if (prev) { prev.textContent = data.result; prev.style.color = '#e0e0e0'; }
+    } else {
+      alert('Ошибка: ' + (data.error || 'неизвестная ошибка'));
+    }
+  } catch (e) {
+    alert('Не удалось подключиться к AI. Проверь что Ollama запущен.');
+  } finally {
+    btn.textContent = '✨ AI Оптимизация';
+    btn.disabled = false;
+  }
+}
+</script>
+      </section>
+
+      <aside class="panel compose-side">
+        <h2 class="panel__title" style="margin-bottom:16px">Предпросмотр</h2>
+
+        <div style="background:#181818;border-radius:14px;padding:16px;border:1px solid #2e2e2e">
+          <!-- Header row -->
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <!-- Avatar with + badge -->
+            <div style="position:relative;flex-shrink:0">
+              <div style="width:40px;height:40px;border-radius:50%;background:#3a3a3a;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;color:#fff">{{ request.user.username|slice:":1"|upper }}</div>
+              <div style="position:absolute;bottom:-2px;right:-2px;width:18px;height:18px;background:#1877f2;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;border:2px solid #181818">+</div>
+            </div>
+            <!-- Name + time -->
+            <div style="flex:1">
+              <div style="font-weight:700;font-size:.92rem;color:#fff">{{ request.user.username }}</div>
+              <div style="font-size:.75rem;color:#888">сейчас</div>
+            </div>
+            <!-- Three dots -->
+            <div style="color:#888;font-size:1.1rem;letter-spacing:2px;cursor:pointer">···</div>
+          </div>
+
+          <!-- Post text -->
+          <p id="preview-text" style="font-size:.93rem;line-height:1.6;color:#555;white-space:pre-wrap;word-break:break-word;min-height:50px;margin:0 0 16px 0">Начните вводить текст поста...</p>
+
+          <!-- Action icons -->
+          <div style="display:flex;gap:20px;align-items:center">
+            <button type="button" style="background:none;border:none;cursor:pointer;color:#888;display:flex;align-items:center;gap:4px;font-size:.82rem;padding:0">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <button type="button" style="background:none;border:none;cursor:pointer;color:#888;display:flex;align-items:center;gap:4px;font-size:.82rem;padding:0">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </button>
+            <button type="button" style="background:none;border:none;cursor:pointer;color:#888;display:flex;align-items:center;gap:4px;font-size:.82rem;padding:0">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            </button>
+            <button type="button" style="background:none;border:none;cursor:pointer;color:#888;display:flex;align-items:center;gap:4px;font-size:.82rem;padding:0">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}

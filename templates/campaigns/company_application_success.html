@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Заявка отправлена — AdWeave{% endblock %}
+
+{% block content %}
+<section class="auth">
+  <div class="container">
+    <div class="auth__card">
+      <p class="section-badge">Готово</p>
+      <h1 class="auth__title">Заявка отправлена</h1>
+      <p class="auth__lead">Администраторы проверят данные и подтвердят подключение компании.</p>
+      <div>
+        <a class="btn btn--primary" href="{% url 'home' %}">На главную</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
