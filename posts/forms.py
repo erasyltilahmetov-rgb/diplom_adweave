@@ -36,7 +36,12 @@ class ComposePostForm(forms.ModelForm):
             "content": "Текст поста",
         }
         widgets = {
-            "content": forms.Textarea(attrs={"rows": 8, "placeholder": "Напишите текст поста..."}),
+            "content": forms.Textarea(attrs={
+                "rows": 8,
+                "placeholder": "Напишите текст поста...",
+                "maxlength": "500",
+                "data-char-limit": "500",
+            }),
         }
 
     def __init__(self, *args, **kwargs):
@@ -48,6 +53,16 @@ class ComposePostForm(forms.ModelForm):
                 "-created_at"
             )
         self.fields["scheduled_for"].widget.is_localized = False
+
+    def clean_content(self):
+        content = self.cleaned_data.get("content", "")
+        if len(content) < 1:
+            raise forms.ValidationError("Пост не может быть пустым.")
+        if len(content) > 500:
+            raise forms.ValidationError(
+                f"Пост не может превышать 500 символов (сейчас {len(content)})."
+            )
+        return content
 
     def clean(self):
         cleaned = super().clean()

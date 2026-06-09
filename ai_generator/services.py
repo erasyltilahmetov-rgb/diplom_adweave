@@ -44,7 +44,7 @@ def get_style_examples(n: int = 5) -> list[str]:
         return []
 
 
-def rewrite_for_threads(raw_text: str, language: str = "ru") -> str:
+def rewrite_for_threads(raw_text: str, language: str = "ru", custom_examples: list[str] | None = None) -> str:
     """
     Переписывает текст в нативный пост для Threads.
 
@@ -55,11 +55,12 @@ def rewrite_for_threads(raw_text: str, language: str = "ru") -> str:
     Returns:
         готовый пост или исходный текст при ошибке
     """
-    examples = get_style_examples(5)
+    examples = custom_examples if custom_examples is not None else get_style_examples(5)
 
     examples_block = ""
     if examples:
-        examples_block = "\n\nПримеры успешных постов в Threads:\n"
+        label = "Примеры топовых постов по теме (учись их стилю):" if custom_examples else "Примеры успешных постов в Threads:"
+        examples_block = f"\n\n{label}\n"
         for i, ex in enumerate(examples, 1):
             examples_block += f"\n[{i}] {ex}\n"
 

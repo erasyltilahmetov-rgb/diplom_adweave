@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Центр помощи — AdWeave{% endblock %}
+
+{% block content %}
+<section class="pricing-hero">
+  <div class="container pricing-hero__grid">
+    <div>
+      <p class="section-badge">Help</p>
+      <h1 class="section-title">Центр помощи</h1>
+      <p class="section-lead">
+        Ответы на частые вопросы и руководства по работе с AdWeave.
+      </p>
+    </div>
+    <div class="pricing-hero__visual" aria-hidden="true">
+      <div class="pricing-hero__blob"></div>
+      <div class="pricing-hero__card">
+        <div class="pricing-hero__chip">FAQ</div>
+        <p>Support</p>
+        <strong>24/7</strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding:60px 0">
+  <div class="container" style="max-width:760px">
+
+    <h2 style="font-size:1.2rem;font-weight:700;margin:0 0 24px">Начало работы</h2>
+    <div class="faq-list">
+      <details class="faq-item" open>
+        <summary>Как зарегистрироваться?</summary>
+        <p>Нажмите «Начать бесплатно» на главной странице, введите email и пароль. Аккаунт создаётся мгновенно — подтверждение email не требуется.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Как подключить Threads-аккаунт?</summary>
+        <p>Перейдите в раздел «Аккаунты» и нажмите «Подключить Threads». Вы будете перенаправлены на страницу авторизации Meta — разрешите доступ. После этого аккаунт появится в списке и будет доступен для публикации.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Что делать если токен Threads истёк?</summary>
+        <p>Токены Threads действуют 60 дней. Если токен истёк — зайдите в «Аккаунты» и нажмите «Переподключить» рядом с аккаунтом. Пройдите OAuth снова, чтобы получить свежий токен.</p>
+      </details>
+    </div>
+
+    <h2 style="font-size:1.2rem;font-weight:700;margin:40px 0 24px">Публикация</h2>
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary>Как опубликовать пост?</summary>
+        <p>Перейдите в «Compose», выберите кампанию и Threads-аккаунт, напишите текст и нажмите «Опубликовать сразу». Пост появится в Threads в течение нескольких секунд.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Как запланировать публикацию?</summary>
+        <p>В Compose заполните поле «Запланировать на» — выберите дату и время. Пост сохранится со статусом «Запланировано» и появится в расписании.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Что такое AI-оптимизация текста?</summary>
+        <p>Нажмите кнопку «✨ AI Оптимизация» в Compose — AI перепишет ваш текст в нативный стиль Threads, основываясь на реальных примерах из базы 21 000+ постов.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Почему не работает публикация?</summary>
+        <p>Проверьте: 1) Подключён ли Threads-аккаунт. 2) Не истёк ли токен. 3) Не превышен ли дневной лимит публикаций (5 для Basic, 20 для Premium). 4) Создана ли хотя бы одна кампания.</p>
+      </details>
+    </div>
+
+    <h2 style="font-size:1.2rem;font-weight:700;margin:40px 0 24px">Тарифы</h2>
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary>Чем отличаются тарифы?</summary>
+        <p>Basic (бесплатно) — 5 постов в день. Premium (2 000 KZT/мес) — 20 постов в день + расширенная аналитика. Enterprise (20 000 KZT/мес) — без ограничений + корпоративные функции.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Есть ли пробный период?</summary>
+        <p>Да, Premium доступен 7 дней бесплатно. Активируйте пробный период на странице «Тарифы».</p>
+      </details>
+      <details class="faq-item">
+        <summary>Как сменить тариф?</summary>
+        <p>Свяжитесь с администратором через раздел «Контакты» или напишите на erasyl02005@mail.ru.</p>
+      </details>
+    </div>
+
+    <div style="margin-top:48px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 32px;text-align:center">
+      <h3 style="font-size:1rem;font-weight:700;margin:0 0 8px">Не нашли ответ?</h3>
+      <p style="color:var(--text-muted);font-size:.9rem;margin:0 0 16px">Напишите нам — ответим в течение 24 часов.</p>
+      <a class="btn btn--primary" href="{% url 'contacts' %}">Написать в поддержку</a>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

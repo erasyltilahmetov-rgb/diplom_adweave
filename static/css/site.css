@@ -16,6 +16,12 @@
   --violet: #8b5cf6;
   --indigo: #6366f1;
   --navy: #0b1020;
+  --footer-bg: #f0f3fb;
+  --footer-text: #374151;
+  --footer-text-muted: #6b7280;
+  --footer-title: #0f172a;
+  --footer-socials-bg: rgba(109, 99, 255, 0.12);
+  --footer-socials-color: #6d63ff;
   --shadow: 0 24px 60px rgba(31, 41, 55, 0.12);
   --shadow-soft: 0 18px 40px rgba(31, 41, 55, 0.08);
   --shadow-tight: 0 8px 20px rgba(31, 41, 55, 0.08);
@@ -44,6 +50,12 @@ html[data-theme="dark"] {
   --violet: #a78bfa;
   --indigo: #7c83ff;
   --navy: #0b0f16;
+  --footer-bg: #0b1020;
+  --footer-text: #e5e7eb;
+  --footer-text-muted: #c7cfdd;
+  --footer-title: #ffffff;
+  --footer-socials-bg: rgba(148, 163, 255, 0.16);
+  --footer-socials-color: #ffffff;
   --shadow: 0 26px 60px rgba(0, 0, 0, 0.55);
   --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.45);
   --shadow-tight: 0 10px 22px rgba(0, 0, 0, 0.4);
@@ -409,10 +421,15 @@ html[data-theme="dark"] .lang-select {
 .hero-card__image {
   border-radius: 24px;
   height: 340px;
-  background: radial-gradient(circle at 65% 35%, rgba(255, 91, 214, 0.35), transparent 55%),
-    radial-gradient(circle at 30% 70%, rgba(33, 200, 255, 0.4), transparent 60%),
-    linear-gradient(140deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
+  overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hero-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .hero-blob {
@@ -457,11 +474,21 @@ html[data-theme="dark"] .lang-select {
   width: min(460px, 100%);
   height: 420px;
   border-radius: 52% 48% 55% 45% / 43% 57% 43% 57%;
-  background: radial-gradient(circle at 20% 20%, rgba(33, 200, 255, 0.35), transparent 60%),
-    linear-gradient(140deg, #0b1020 0%, #111c44 55%, #1e3a8a 100%);
+  overflow: hidden;
   border: 10px solid var(--surface);
   box-shadow: var(--shadow);
 }
+
+.blob-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Переключение картинок по теме */
+html[data-theme="light"] .theme-img--dark { display: none; }
+html[data-theme="dark"] .theme-img--light { display: none; }
 
 .feature-list {
   display: grid;
@@ -640,8 +667,8 @@ html[data-theme="dark"] .lang-select {
 .footer {
   margin-top: 40px;
   padding: 56px 0 26px;
-  background: var(--navy);
-  color: #e5e7eb;
+  background: var(--footer-bg);
+  color: var(--footer-text);
 }
 
 .footer__grid {
@@ -659,7 +686,7 @@ html[data-theme="dark"] .lang-select {
 
 .footer__text {
   margin: 0 0 18px;
-  color: #c7cfdd;
+  color: var(--footer-text-muted);
   line-height: 1.7;
   max-width: 320px;
 }
@@ -675,8 +702,8 @@ html[data-theme="dark"] .lang-select {
   border-radius: 12px;
   display: grid;
   place-items: center;
-  background: rgba(148, 163, 255, 0.16);
-  color: white;
+  background: var(--footer-socials-bg);
+  color: var(--footer-socials-color);
   text-decoration: none;
   font-weight: 700;
 }
@@ -684,7 +711,7 @@ html[data-theme="dark"] .lang-select {
 .footer__title {
   margin: 0 0 12px;
   font-weight: 700;
-  color: white;
+  color: var(--footer-title);
 }
 
 .footer__col {
@@ -693,24 +720,24 @@ html[data-theme="dark"] .lang-select {
 }
 
 .footer__col a {
-  color: #c7cfdd;
+  color: var(--footer-text-muted);
   text-decoration: none;
   font-size: 15px;
 }
 
 .footer__col a:hover {
-  color: white;
+  color: var(--footer-title);
 }
 
 .footer__bottom {
   margin-top: 36px;
   padding-top: 18px;
-  border-top: 1px solid rgba(148, 163, 255, 0.18);
+  border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  color: #c7cfdd;
+  color: var(--footer-text-muted);
   font-size: 14px;
 }
 
@@ -726,7 +753,7 @@ html[data-theme="dark"] .lang-select {
 }
 
 .footer__bottom-links a {
-  color: #c7cfdd;
+  color: var(--footer-text-muted);
   text-decoration: none;
 }
 
@@ -929,18 +956,22 @@ html[data-theme="dark"] .lang-select {
 
 .sidebar {
   width: 240px;
-  min-height: 100vh;
+  height: 100vh;
   background: var(--surface);
   border-right: 1px solid var(--border);
-  padding: 18px 16px;
+  padding: 14px 12px;
   position: sticky;
   top: 0;
   align-self: flex-start;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
   z-index: 30;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
 }
+.sidebar::-webkit-scrollbar { display: none; }
 
 .sidebar__header {
   display: flex;
@@ -991,9 +1022,10 @@ html[data-theme="dark"] .lang-select {
   gap: 10px;
   text-decoration: none;
   color: var(--text);
-  padding: 8px 10px;
+  padding: 6px 10px;
   border-radius: 10px;
   font-weight: 600;
+  font-size: .9rem;
 }
 
 .sidebar__icon {
@@ -1058,7 +1090,9 @@ html[data-theme="dark"] .lang-select {
 .sidebar__footer {
   margin-top: auto;
   display: grid;
-  gap: 10px;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
 }
 
 .sidebar-overlay {
@@ -1393,6 +1427,11 @@ html[data-theme="dark"] .lang-select {
   color: #b91c1c;
   font-size: 13px;
   line-height: 1.4;
+}
+
+.auth__card form .btn {
+  margin-top: 8px;
+  width: 100%;
 }
 
 .auth__footer {
@@ -2723,4 +2762,174 @@ html[data-theme="dark"] .section-badge {
 }
 .toggle-switch:hover input:not(:checked) + .toggle-slider {
   background: rgba(255,255,255,0.12);
+}
+
+/* =====================================================
+   MOBILE RESPONSIVE — global fixes ≤640px / ≤480px
+   ===================================================== */
+
+/* --- Pricing table → card stack on mobile --- */
+@media (max-width: 700px) {
+  .pricing table {
+    display: block;
+  }
+  .pricing thead {
+    display: none;
+  }
+  .pricing tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .pricing tbody tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    font-size: .78rem;
+  }
+  .pricing tbody tr td:first-child {
+    font-weight: 600;
+    grid-column: 1 / -1;
+    background: var(--surface-muted);
+    padding: 8px 14px 4px;
+    color: var(--text);
+  }
+  .pricing tbody tr td:not(:first-child) {
+    padding: 4px 8px 8px;
+    text-align: center;
+  }
+
+  /* Pricing hero */
+  .pricing-hero__grid {
+    grid-template-columns: 1fr;
+  }
+  .pricing-hero__visual {
+    display: none;
+  }
+}
+
+/* --- Dashboard stats grid --- */
+@media (max-width: 640px) {
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .stat-card {
+    padding: 14px 16px;
+  }
+  .stat-card__value {
+    font-size: 1.6rem;
+  }
+
+  /* Dashboard grid → single column */
+  .dashboard-grid,
+  .history-grid,
+  .accounts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Compose */
+  .compose-grid {
+    grid-template-columns: 1fr;
+  }
+  .compose-actions {
+    flex-wrap: wrap;
+  }
+
+  /* Table scroll */
+  .table-card {
+    overflow-x: auto;
+  }
+  .table {
+    min-width: 500px;
+  }
+
+  /* Panels */
+  .panel {
+    padding: 16px;
+  }
+
+  /* Campaigns/posts action buttons */
+  .table__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  /* History cards */
+  .history-list article > div:last-child {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Buttons in rows */
+  .dashboard__actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .dashboard__actions .btn {
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+  }
+
+  /* Accounts items */
+  .accounts-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .accounts-item__actions {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .accounts-item__actions .btn,
+  .accounts-item__actions form {
+    flex: 1;
+  }
+  .accounts-item__actions form .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* App content padding */
+  .app-content {
+    padding: 12px 12px 20px;
+  }
+
+  /* Section hero */
+  .section-title {
+    font-size: 1.6rem;
+  }
+  .section-lead {
+    font-size: .95rem;
+  }
+
+  /* Sidebar user badge */
+  .sidebar__user-name {
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Pricing note */
+  .pricing-note {
+    font-size: .8rem;
+    text-align: center;
+  }
+
+  /* Form rows */
+  .form-row label {
+    font-size: .85rem;
+  }
+
+  /* Char counter */
+  .char-counter {
+    font-size: .75rem;
+  }
 }

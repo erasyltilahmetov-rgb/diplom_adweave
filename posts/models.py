@@ -35,6 +35,7 @@ class Post(models.Model):
     ai_optimized = models.BooleanField("AI-оптимизация", default=False)
     published_at = models.DateTimeField("Опубликовано в", null=True, blank=True)
     threads_thread_id = models.CharField("Threads ID", max_length=64, blank=True)
+    threads_permalink = models.URLField("Threads permalink", max_length=512, blank=True)
     last_publish_error = models.TextField("Ошибка публикации", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

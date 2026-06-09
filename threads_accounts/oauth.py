@@ -100,6 +100,21 @@ def exchange_for_long_lived_token(short_lived_token: str) -> dict[str, Any]:
     return response.json()
 
 
+def refresh_long_lived_token(access_token: str) -> dict[str, Any]:
+    _ensure_configured()
+    url = f"{THREADS_API_BASE}/refresh_access_token"
+    params = {
+        "grant_type": "th_refresh_token",
+        "access_token": access_token,
+    }
+    response = requests.get(url, params=params, timeout=30)
+    try:
+        response.raise_for_status()
+    except requests.HTTPError as exc:
+        raise ThreadsOAuthError(response.text) from exc
+    return response.json()
+
+
 def fetch_me(access_token: str) -> dict[str, Any]:
     url = f"{THREADS_API_BASE}/me"
     params = {

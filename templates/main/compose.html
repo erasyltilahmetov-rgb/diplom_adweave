@@ -37,49 +37,50 @@
     <div class="dashboard__header">
       <div>
         <h1 class="dashboard__title">Compose</h1>
-        <p class="dashboard__subtitle">Создайте пост, запланируйте его или опубликуйте сразу.</p>
+        <p class="dashboard__subtitle" data-i18n="comp.subtitle">Создайте пост, запланируйте его или опубликуйте сразу.</p>
       </div>
       <div class="dashboard__actions">
-        <a class="btn btn--outline" href="{% url 'history' %}">История</a>
-        <a class="btn btn--ghost" href="/admin/posts/post/add/">Через админку</a>
+        <a class="btn btn--outline" href="{% url 'history' %}" data-i18n="comp.history">История</a>
+        <a class="btn btn--ghost" href="/admin/posts/post/add/" data-i18n="comp.admin">Через админку</a>
       </div>
     </div>
 
     <div class="limit-card">
       <div>
-        <p class="limit-card__title">Лимит публикаций на сегодня</p>
+        <p class="limit-card__title" data-i18n="comp.limit">Лимит публикаций на сегодня</p>
         <p class="limit-card__meta">
-          Использовано: <strong>{{ published_today }}</strong> из <strong>{{ daily_limit }}</strong>.
-          Осталось: <strong>{{ remaining_publishes }}</strong>.
+          <span data-i18n="comp.used">Использовано:</span> <strong>{{ published_today }}</strong>
+          <span data-i18n="comp.of">из</span> <strong>{{ daily_limit }}</strong>.
+          <span data-i18n="comp.remaining">Осталось:</span> <strong>{{ remaining_publishes }}</strong>.
         </p>
       </div>
       {% if publishing_blocked %}
-        <a class="btn btn--outline" href="{% url 'pricing' %}">Повысить тариф</a>
+        <a class="btn btn--outline" href="{% url 'pricing' %}" data-i18n="comp.upgrade">Повысить тариф</a>
       {% elif is_privileged %}
-        <span class="badge">Без ограничений</span>
+        <span class="badge" data-i18n="comp.unlimited">Без ограничений</span>
       {% endif %}
     </div>
 
     {% if not has_campaigns or not has_accounts %}
       <div class="notice-card notice-card--warn">
-        <p class="notice-card__title">Нужно подготовить данные</p>
-        <p class="notice-card__text">
+        <p class="notice-card__title" data-i18n="comp.nodata_title">Нужно подготовить данные</p>
+        <p class="notice-card__text" data-i18n="comp.nodata_text">
           Для публикации нужны кампания и хотя бы один активный Threads-аккаунт.
         </p>
         <div class="notice-card__actions">
           {% if not has_campaigns %}
-            <a class="btn btn--primary btn--small" href="{% url 'campaigns:create' %}">Создать кампанию</a>
+            <a class="btn btn--primary btn--small" href="{% url 'campaigns:create' %}" data-i18n="comp.create_campaign">Создать кампанию</a>
           {% endif %}
           {% if not has_accounts %}
-            <a class="btn btn--outline btn--small" href="{% url 'accounts' %}">Подключить аккаунт</a>
+            <a class="btn btn--outline btn--small" href="{% url 'accounts' %}" data-i18n="comp.connect_account">Подключить аккаунт</a>
           {% endif %}
         </div>
       </div>
     {% endif %}
 
     <div class="compose-grid">
-      <section class="panel compose-form">
-        <h2 class="panel__title">Параметры публикации</h2>
+      <section class="panel compose-form" data-i18n-auto>
+        <h2 class="panel__title" data-i18n="comp.params">Параметры публикации</h2>
         <form method="post" novalidate>
           {% csrf_token %}
 
@@ -93,6 +94,11 @@
               <div class="form-row">
                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                 {{ field }}
+                {% if field.name == 'content' %}
+                  <div class="char-counter" id="charCounter" style="font-size:.78rem;color:var(--text-muted);text-align:right;margin-top:4px">
+                    <span id="charCount">0</span> / 5000
+                  </div>
+                {% endif %}
                 {% if field.errors %}
                   <div class="form-errors-inline">{{ field.errors }}</div>
                 {% endif %}
@@ -112,7 +118,7 @@
 
           {# Тогл "Опубликовать сразу" #}
           <div class="form-row form-row--toggle">
-            <span class="toggle-label">Опубликовать сразу</span>
+            <span class="toggle-label" data-i18n="comp.publish_now">Опубликовать сразу</span>
             <label class="toggle-switch">
               <input type="checkbox" name="publish_now" id="id_publish_now">
               <span class="toggle-slider"></span>
@@ -120,13 +126,13 @@
           </div>
 
           <div class="compose-actions">
-            <button class="btn btn--primary" type="submit" {% if not has_campaigns or not has_accounts %}disabled{% endif %}>
+            <button class="btn btn--primary" type="submit" {% if not has_campaigns or not has_accounts %}disabled{% endif %} data-i18n="comp.save">
               Сохранить
             </button>
-            <button class="btn btn--outline" type="button" id="ai-rewrite-btn" onclick="aiRewrite()">
+            <button class="btn btn--outline" type="button" id="ai-rewrite-btn" onclick="aiRewrite()" data-i18n="comp.ai">
               ✨ AI Оптимизация
             </button>
-            <a class="btn btn--outline" href="{% url 'posts' %}">Расписание</a>
+            <a class="btn btn--outline" href="{% url 'posts' %}" data-i18n="comp.schedule">Расписание</a>
           </div>
         </form>
 
@@ -140,35 +146,67 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
+  const charCount = document.getElementById('charCount');
+  const charCounter = document.getElementById('charCounter');
+  const LIMIT = 5000;
+
+  function updateCounter() {
+    const len = textarea.value.length;
+    if (charCount) {
+      charCount.textContent = len;
+      if (charCounter) {
+        charCounter.style.color = len > LIMIT ? '#ef4444' : len > LIMIT * 0.85 ? '#f59e0b' : 'var(--text-muted)';
+      }
+    }
+  }
+
   textarea.addEventListener('input', function() {
+    updateCounter();
     const val = this.value.trim();
     if (val) {
       previewText.textContent = val;
       previewText.style.color = '#e0e0e0';
     } else {
-      previewText.textContent = 'Начните вводить текст поста...';
+      previewText.textContent = _T.previewHint;
       previewText.style.color = '#555';
     }
   });
+
+  updateCounter();
+
+  // Подставить текст из URL ?text=... (из пака или другого источника)
+  const urlText = new URLSearchParams(window.location.search).get('text');
+  if (urlText && !textarea.value) {
+    textarea.value = urlText;
+    textarea.dispatchEvent(new Event('input'));
+  }
 });
+
+const _uiLang = localStorage.getItem('adweave-lang') || 'ru';
+const _aiI18n = {
+  ru: {enterText:'Введите текст поста перед AI-оптимизацией',generating:'⏳ Генерирую...',error:'Ошибка: ',unknownErr:'неизвестная ошибка',noConnect:'Не удалось подключиться к AI. Проверь что Ollama запущен.',aiBtn:'✨ AI Оптимизация',previewHint:'Начните вводить текст поста...'},
+  en: {enterText:'Enter post text before AI optimization',generating:'⏳ Generating...',error:'Error: ',unknownErr:'unknown error',noConnect:'Could not connect to AI. Make sure Ollama is running.',aiBtn:'✨ AI Optimize',previewHint:'Start typing your post...'},
+  kz: {enterText:'AI оңтайландыруға дейін жазба мәтінін енгізіңіз',generating:'⏳ Генерациялауда...',error:'Қате: ',unknownErr:'белгісіз қате',noConnect:'AI-ға қосылу мүмкін болмады. Ollama іске қосылғанын тексеріңіз.',aiBtn:'✨ AI Оптимизация',previewHint:'Мәтін теруді бастаңыз...'},
+};
+const _T = _aiI18n[_uiLang] || _aiI18n.ru;
 
 async function aiRewrite() {
   const btn = document.getElementById('ai-rewrite-btn');
   const textarea = document.querySelector('textarea[name="content"]');
 
   if (!textarea || !textarea.value.trim()) {
-    alert('Введите текст поста перед AI-оптимизацией');
+    alert(_T.enterText);
     return;
   }
 
-  btn.textContent = '⏳ Генерирую...';
+  btn.textContent = _T.generating;
   btn.disabled = true;
 
   try {
     const resp = await fetch('/ai/rewrite/', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({text: textarea.value, language: 'ru'}),
+      body: JSON.stringify({text: textarea.value, language: _uiLang}),
     });
     const data = await resp.json();
     if (data.result) {
@@ -176,12 +214,12 @@ async function aiRewrite() {
       const prev = document.getElementById('preview-text');
       if (prev) { prev.textContent = data.result; prev.style.color = '#e0e0e0'; }
     } else {
-      alert('Ошибка: ' + (data.error || 'неизвестная ошибка'));
+      alert(_T.error + (data.error || _T.unknownErr));
     }
   } catch (e) {
-    alert('Не удалось подключиться к AI. Проверь что Ollama запущен.');
+    alert(_T.noConnect);
   } finally {
-    btn.textContent = '✨ AI Оптимизация';
+    btn.textContent = _T.aiBtn;
     btn.disabled = false;
   }
 }
@@ -189,7 +227,7 @@ async function aiRewrite() {
       </section>
 
       <aside class="panel compose-side">
-        <h2 class="panel__title" style="margin-bottom:16px">Предпросмотр</h2>
+        <h2 class="panel__title" style="margin-bottom:16px" data-i18n="comp.preview">Предпросмотр</h2>
 
         <div style="background:#181818;border-radius:14px;padding:16px;border:1px solid #2e2e2e">
           <!-- Header row -->
@@ -202,14 +240,14 @@ async function aiRewrite() {
             <!-- Name + time -->
             <div style="flex:1">
               <div style="font-weight:700;font-size:.92rem;color:#fff">{{ request.user.username }}</div>
-              <div style="font-size:.75rem;color:#888">сейчас</div>
+              <div style="font-size:.75rem;color:#888" data-i18n="comp.now">сейчас</div>
             </div>
             <!-- Three dots -->
             <div style="color:#888;font-size:1.1rem;letter-spacing:2px;cursor:pointer">···</div>
           </div>
 
           <!-- Post text -->
-          <p id="preview-text" style="font-size:.93rem;line-height:1.6;color:#555;white-space:pre-wrap;word-break:break-word;min-height:50px;margin:0 0 16px 0">Начните вводить текст поста...</p>
+          <p id="preview-text" style="font-size:.93rem;line-height:1.6;color:#555;white-space:pre-wrap;word-break:break-word;min-height:50px;margin:0 0 16px 0" data-i18n="comp.preview_hint">Начните вводить текст поста...</p>
 
           <!-- Action icons -->
           <div style="display:flex;gap:20px;align-items:center">

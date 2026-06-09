@@ -234,3 +234,109 @@ def _extract_texts(obj, depth=0) -> list[str]:
         for item in obj:
             texts.extend(_extract_texts(item, depth + 1))
     return texts
+
+
+def _pick_int(node: dict, *keys) -> int:
+    """Берёт первое ненулевое целое из списка ключей."""
+    for k in keys:
+        v = node.get(k)
+        if v:
+            try:
+                return int(v)
+            except (TypeError, ValueError):
+                pass
+    return 0
+
+
+def _extract_posts_full(obj, depth=0) -> list[dict]:
+    """
+    Рекурсивно извлекаем полные объекты постов из GraphQL-ответа Threads.
+    Возвращает список словарей с text, username, likes, replies, reposts.
+    """
+    if depth > 14:
+        return []
+    results = []
+
+    if isinstance(obj, dict):
+        # Threads GraphQL: ищем узел с like_count И текстом — это и есть пост
+        post_node = None
+
+        # Вариант 1: {"post": {...}} или {"thread_item": {...}} или {"media": {...}}
+        for post_key in ("post", "thread_item", "node", "media", "item"):
+            candidate = obj.get(post_key)
+            if isinstance(candidate, dict) and (
+                "like_count" in candidate or
+                (isinstance(candidate.get("caption"), dict) and isinstance(candidate.get("user"), dict))
+            ):
+                post_node = candidate
+                break
+
+        # Вариант 2: сам объект содержит like_count
+        if post_node is None and "like_count" in obj:
+            post_node = obj
+
+        if post_node is not None:
+            # Извлекаем текст
+            text = ""
+            caption = post_node.get("caption")
+            if isinstance(caption, dict):
+                text = caption.get("text", "")
+            if not text:
+                text = post_node.get("text", "") or ""
+
+            if isinstance(text, str) and 15 <= len(text) <= 2000:
+                user_node = post_node.get("user") or {}
+                username = user_node.get("username", "") if isinstance(user_node, dict) else ""
+
+                # DEBUG: один раз печатаем ключи post_node чтобы найти правильные имена полей
+                import logging as _logging
+                _log = _logging.getLogger("trending_debug")
+                if not getattr(_extract_posts_full, "_debug_printed", False):
+                    _extract_posts_full._debug_printed = True
+                    _log.warning("POST_NODE KEYS: %s", list(post_node.keys()))
+                    tpai = post_node.get("text_post_app_info")
+                    if isinstance(tpai, dict):
+                        _log.warning("text_post_app_info KEYS: %s", list(tpai.keys()))
+
+                # Метрики могут лежать прямо на post_node ИЛИ внутри text_post_app_info
+                _tpai = post_node.get("text_post_app_info") or {}
+
+                likes = _pick_int(post_node,
+                    "like_count", "fb_like_count")
+
+                replies = _pick_int(post_node,
+                    "reply_count", "direct_reply_count", "text_post_app_badge_count",
+                    "replies_count", "comment_count",
+                ) or _pick_int(_tpai,
+                    "reply_count", "direct_reply_count", "replies_count", "comment_count",
+                )
+
+                reposts = _pick_int(post_node,
+                    "repost_count", "reshare_count", "share_count", "quote_count",
+                ) or _pick_int(_tpai,
+                    "repost_count", "reshare_count", "share_count", "quote_count",
+                )
+
+                results.append({
+                    "text": text,
+                    "username": username,
+                    "likes": likes,
+                    "replies": replies,
+                    "reposts": reposts,
+                })
+                # Не делаем return — могут быть ещё посты в соседних ключах
+                # но пропускаем рекурсию внутрь этого же поста
+                for k, v in obj.items():
+                    if k not in ("post", "thread_item", "node") and isinstance(v, (dict, list)):
+                        results.extend(_extract_posts_full(v, depth + 1))
+                return results
+
+        for v in obj.values():
+            if isinstance(v, (dict, list)):
+                results.extend(_extract_posts_full(v, depth + 1))
+
+    elif isinstance(obj, list):
+        for item in obj:
+            results.extend(_extract_posts_full(item, depth + 1))
+
+    return results

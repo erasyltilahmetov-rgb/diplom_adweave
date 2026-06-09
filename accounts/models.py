@@ -10,9 +10,9 @@ class UserProfile(models.Model):
         SUPPORT = "support", "Техподдержка"
 
     class Plan(models.TextChoices):
-        BASIC = "basic", "Тариф обычный"
-        STANDARD = "standard", "Тариф средний"
-        PRO = "pro", "Тариф про"
+        BASIC = "basic", "Basic"
+        STANDARD = "standard", "Premium"
+        PRO = "pro", "Enterprise"
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -53,10 +53,11 @@ class UserProfile(models.Model):
         if self.daily_limit_override:
             return int(self.daily_limit_override)
         limits = {
-            self.Plan.BASIC: 1,
-            self.Plan.STANDARD: 10,
+            self.Plan.BASIC: 5,       # L_daily(BASIC) = 5  (формула 2.2.1.2)
+            self.Plan.STANDARD: 20,   # L_daily(PREMIUM) = 20
+            self.Plan.PRO: 10000,     # L_daily(ENTERPRISE) = ∞
         }
-        return limits.get(self.effective_plan, 1)
+        return limits.get(self.effective_plan, 5)
 
     @property
     def can_submit_company_application(self) -> bool:

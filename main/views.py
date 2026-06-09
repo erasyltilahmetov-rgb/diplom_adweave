@@ -20,6 +20,7 @@ from posts.threads_api import (
     fetch_mentions,
     fetch_profile_insights,
     fetch_replies,
+    fetch_thread_details,
     fetch_threads,
     fetch_thread_insights,
     keyword_search,
@@ -530,6 +531,7 @@ def accounts_page(request):
         "oauth_ready": oauth_ready,
         "oauth_redirect_uri": redirect_uri,
         "tunnel_url": tunnel_url,
+        "now": timezone.now(),
     }
     return render(request, "main/accounts.html", context)
 
@@ -546,6 +548,26 @@ def analytics_page(request):
 
 def privacy_page(request):
     return render(request, "main/privacy.html")
+
+
+def terms_page(request):
+    return render(request, "main/terms.html")
+
+
+def about_page(request):
+    return render(request, "main/about.html")
+
+
+def updates_page(request):
+    return render(request, "main/updates.html")
+
+
+def help_page(request):
+    return render(request, "main/help.html")
+
+
+def careers_page(request):
+    return render(request, "main/careers.html")
 
 
 @login_required
@@ -755,14 +777,25 @@ def _publish_post_with_feedback(request, post: Post, privileged: bool, daily_lim
             success=False,
             error_message=error_text,
         )
-        messages.error(request, "Ошибка публикации в Threads. Проверьте токен и права доступа.")
+        if '"code":190' in error_text or "Session has expired" in error_text or "Error validating access token" in error_text:
+            messages.error(
+                request,
+                "Токен Threads-аккаунта истёк. Зайдите в «Аккаунты» и переподключите аккаунт через OAuth.",
+            )
+            return redirect("accounts")
+        messages.error(request, f"Ошибка публикации в Threads: {error_text}")
         return redirect("posts")
 
     post.status = Post.Status.PUBLISHED
     post.published_at = timezone.now()
     post.threads_thread_id = result.thread_id
     post.last_publish_error = ""
-    post.save(update_fields=["status", "published_at", "threads_thread_id", "last_publish_error", "updated_at"])
+    try:
+        details = fetch_thread_details(result.thread_id, access_token=access_token)
+        post.threads_permalink = details.get("permalink", "")
+    except ThreadsAPIError:
+        post.threads_permalink = ""
+    post.save(update_fields=["status", "published_at", "threads_thread_id", "threads_permalink", "last_publish_error", "updated_at"])
 
     PublishLog.objects.create(
         user=request.user,

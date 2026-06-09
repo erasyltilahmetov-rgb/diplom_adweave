@@ -6,14 +6,14 @@
 <section class="pricing-hero">
   <div class="container pricing-hero__grid">
     <div>
-      <p class="section-badge">Тарифы</p>
-      <h1 class="section-title">Выберите подходящий тариф</h1>
-      <p class="section-lead">
+      <p class="section-badge" data-i18n="price.badge">Тарифы</p>
+      <h1 class="section-title" data-i18n="price.title">Выберите подходящий тариф</h1>
+      <p class="section-lead" data-i18n="price.subtitle">
         Начните бесплатно и масштабируйте автоматизацию маркетинга в Threads по мере роста задач.
       </p>
       <div class="pricing-hero__actions">
-        <a class="btn btn--primary" href="{% url 'accounts:register' %}">Начать бесплатно</a>
-        <a class="btn btn--outline" href="{% url 'contacts' %}">Связаться с нами</a>
+        <a class="btn btn--primary" href="{% url 'accounts:register' %}" data-i18n="price.start_free">Начать бесплатно</a>
+        <a class="btn btn--outline" href="{% url 'contacts' %}" data-i18n="price.contact">Связаться с нами</a>
       </div>
     </div>
     <div class="pricing-hero__visual" aria-hidden="true">
@@ -29,77 +29,140 @@
 
 <section class="pricing">
   <div class="container">
-    <div class="pricing-grid">
-      <article class="price-card">
-        <p class="price-card__name">Базовый</p>
-        <p class="price-card__price">0 ₸</p>
-        <p class="price-card__meta">Тариф обычный</p>
-        <ul class="price-card__list">
-          <li>Ознакомление с платформой</li>
-          <li>1 автопубликация в день</li>
-          <li>Без заявок на компанию</li>
-        </ul>
-        <a class="btn btn--outline" href="{% url 'accounts:register' %}">Начать бесплатно</a>
-      </article>
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;border-radius:16px;overflow:hidden">
+      <thead>
+        <tr>
+          <th style="padding:20px 24px;text-align:left;background:var(--surface);border-bottom:1px solid var(--border);width:35%"></th>
 
-      <article class="price-card price-card--featured">
-        <div class="price-card__badge">7 дней бесплатно</div>
-        <p class="price-card__name">Средний</p>
-        <p class="price-card__price">0 ₸ / 7 дней</p>
-        <p class="price-card__meta">Пробный доступ</p>
-        <ul class="price-card__list">
-          <li>До 10 автопубликаций в день</li>
-          <li>AI-оптимизация текста</li>
-          <li>Можно подать заявку на компанию</li>
-          <li>Базовая аналитика</li>
-        </ul>
-        {% if user.is_authenticated %}
-          {% if trial_active %}
-            <div class="price-card__note">
-              Активен до {{ trial_ends_at|date:"d.m.Y" }}
+          <th style="padding:20px 24px;text-align:center;background:var(--surface);border-bottom:1px solid var(--border)">
+            <div style="font-size:.75rem;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">BASIC</div>
+            <div style="font-size:1.6rem;font-weight:800">$0</div>
+            <div style="font-size:.8rem;color:#888;margin-top:2px" data-i18n="price.per_month">/ мес</div>
+            <div style="margin-top:12px">
+              <a class="btn btn--outline btn--small" href="{% url 'accounts:register' %}" data-i18n="price.start_free">Начать бесплатно</a>
             </div>
-            <button class="btn btn--outline" type="button" disabled>Пробный тариф активен</button>
-          {% elif trial_started_at %}
-            <div class="price-card__note">Пробный период уже использован</div>
-            <button class="btn btn--outline" type="button" disabled>Недоступно</button>
-          {% else %}
-            <form method="post">
-              {% csrf_token %}
-              <button class="btn btn--primary" name="action" value="start_trial" type="submit">
-                Активировать 7 дней
-              </button>
-            </form>
-          {% endif %}
-        {% else %}
-          <a class="btn btn--primary" href="{% url 'accounts:register' %}">Попробовать</a>
-        {% endif %}
-      </article>
+          </th>
+
+          <th style="padding:20px 24px;text-align:center;background:linear-gradient(135deg,rgba(109,99,255,0.12),rgba(127,91,255,0.06));border-bottom:1px solid var(--border);position:relative">
+            <div style="position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:#6d63ff;color:#fff;font-size:.7rem;font-weight:700;padding:3px 12px;border-radius:0 0 8px 8px;letter-spacing:.05em" data-i18n="price.popular">Популярный</div>
+            <div style="font-size:.75rem;color:#6d63ff;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;margin-top:8px">PREMIUM</div>
+            <div style="font-size:1.6rem;font-weight:800">2 000 <span style="font-size:1rem">KZT</span></div>
+            <div style="font-size:.8rem;color:#888;margin-top:2px" data-i18n="price.per_month">/ мес</div>
+            <div style="margin-top:12px">
+              {% if user.is_authenticated %}
+                {% if trial_active %}
+                  <button class="btn btn--primary btn--small" disabled data-i18n="price.active">Активен</button>
+                {% else %}
+                  <form method="post" style="margin:0">{% csrf_token %}
+                    <button class="btn btn--primary btn--small" name="action" value="start_trial" data-i18n="price.try7">7 дней бесплатно</button>
+                  </form>
+                {% endif %}
+              {% else %}
+                <a class="btn btn--primary btn--small" href="{% url 'accounts:register' %}" data-i18n="price.try">Попробовать</a>
+              {% endif %}
+            </div>
+          </th>
+
+          <th style="padding:20px 24px;text-align:center;background:var(--surface);border-bottom:1px solid var(--border)">
+            <div style="font-size:.75rem;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px">ENTERPRISE</div>
+            <div style="font-size:1.6rem;font-weight:800">20 000 <span style="font-size:1rem">KZT</span></div>
+            <div style="font-size:.8rem;color:#888;margin-top:2px" data-i18n="price.per_month">/ мес</div>
+            <div style="margin-top:12px">
+              <a class="btn btn--outline btn--small" href="{% url 'contacts' %}" data-i18n="price.contact">Связаться с нами</a>
+            </div>
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for label, basic, premium, enterprise in pricing_rows %}
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:14px 24px;font-size:.9rem;color:var(--text-muted)">{{ label }}</td>
+          <td style="padding:14px 24px;text-align:center;font-size:.9rem">{{ basic }}</td>
+          <td style="padding:14px 24px;text-align:center;font-size:.9rem;background:rgba(109,99,255,0.04)">{{ premium }}</td>
+          <td style="padding:14px 24px;text-align:center;font-size:.9rem">{{ enterprise }}</td>
+        </tr>
+        {% empty %}
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:14px 24px;color:var(--text-muted)" data-i18n="price.row.price">Цена / мес</td>
+          <td style="padding:14px 24px;text-align:center">$0</td>
+          <td style="padding:14px 24px;text-align:center;background:rgba(109,99,255,0.04)">2 000 KZT</td>
+          <td style="padding:14px 24px;text-align:center">20 000 KZT</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:14px 24px;color:var(--text-muted)" data-i18n="price.row.posts">Постов в день</td>
+          <td style="padding:14px 24px;text-align:center;font-weight:600">5</td>
+          <td style="padding:14px 24px;text-align:center;font-weight:600;background:rgba(109,99,255,0.04)">20</td>
+          <td style="padding:14px 24px;text-align:center;font-weight:600">∞</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:14px 24px;color:var(--text-muted)" data-i18n="price.row.connect">Подключить Threads-аккаунт</td>
+          <td style="padding:14px 24px;text-align:center;color:#22c55e" data-i18n="price.yes">Да</td>
+          <td style="padding:14px 24px;text-align:center;color:#22c55e;background:rgba(109,99,255,0.04)" data-i18n="price.yes">Да</td>
+          <td style="padding:14px 24px;text-align:center;color:#22c55e" data-i18n="price.yes">Да</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:14px 24px;color:var(--text-muted)" data-i18n="price.row.publish">Создавать и публиковать посты</td>
+          <td style="padding:14px 24px;text-align:center;color:#22c55e" data-i18n="price.yes">Да</td>
+          <td style="padding:14px 24px;text-align:center;color:#22c55e;background:rgba(109,99,255,0.04)" data-i18n="price.yes">Да</td>
+          <td style="padding:14px 24px;text-align:center;color:#22c55e" data-i18n="price.yes">Да</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:14px 24px;color:var(--text-muted)" data-i18n="price.row.schedule">Расписание постов</td>
+          <td style="padding:14px 24px;text-align:center;color:#22c55e" data-i18n="price.yes">Да</td>
+          <td style="padding:14px 24px;text-align:center;color:#22c55e;background:rgba(109,99,255,0.04)" data-i18n="price.yes">Да</td>
+          <td style="padding:14px 24px;text-align:center;color:#22c55e" data-i18n="price.yes">Да</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:14px 24px;color:var(--text-muted)" data-i18n="price.row.campaigns">Управление кампаниями</td>
+          <td style="padding:14px 24px;text-align:center;color:#22c55e" data-i18n="price.yes">Да</td>
+          <td style="padding:14px 24px;text-align:center;color:#22c55e;background:rgba(109,99,255,0.04)" data-i18n="price.yes">Да</td>
+          <td style="padding:14px 24px;text-align:center;color:#22c55e" data-i18n="price.yes">Да</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:14px 24px;color:var(--text-muted)" data-i18n="price.row.ai">AI генерация контента</td>
+          <td style="padding:14px 24px;text-align:center;color:#22c55e" data-i18n="price.yes">Да</td>
+          <td style="padding:14px 24px;text-align:center;color:#22c55e;background:rgba(109,99,255,0.04)" data-i18n="price.yes">Да</td>
+          <td style="padding:14px 24px;text-align:center;color:#22c55e" data-i18n="price.yes">Да</td>
+        </tr>
+        <tr>
+          <td style="padding:14px 24px;color:var(--text-muted)" data-i18n="price.row.analytics">Аналитика</td>
+          <td style="padding:14px 24px;text-align:center;color:#888" data-i18n="price.basic">Базовая</td>
+          <td style="padding:14px 24px;text-align:center;color:#6d63ff;font-weight:600;background:rgba(109,99,255,0.04)" data-i18n="price.advanced">Продвинутая</td>
+          <td style="padding:14px 24px;text-align:center;color:#6d63ff;font-weight:600" data-i18n="price.advanced">Продвинутая</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
     </div>
 
-    <div class="pricing-note">Пробный тариф «Средний» доступен 7 дней бесплатно.</div>
+    <div class="pricing-note" style="margin-top:16px" data-i18n="price.note_short">
+      Premium доступен 7 дней бесплатно
+    </div>
   </div>
 </section>
 
 <section class="faq">
   <div class="container faq__wrap">
     <p class="section-badge section-badge--center">FAQ</p>
-    <h2 class="section-title section-title--center">Часто задаваемые вопросы</h2>
+    <h2 class="section-title section-title--center" data-i18n="price.faq">Часто задаваемые вопросы</h2>
     <div class="faq-list">
       <details class="faq-item" open>
-        <summary>Что такое AdWeave?</summary>
-        <p>Это платформа для автоматизации маркетинга в Threads: контент, расписание и аналитика.</p>
+        <summary data-i18n="price.faq1q">Что такое AdWeave?</summary>
+        <p data-i18n="price.faq1a">Это платформа для автоматизации маркетинга в Threads: контент, расписание и аналитика.</p>
       </details>
       <details class="faq-item">
-        <summary>Чем отличаются тарифы?</summary>
-        <p>Лимитами на автоматизацию, доступом к заявкам на компанию и уровнем поддержки.</p>
+        <summary data-i18n="price.faq2q">Чем отличаются тарифы?</summary>
+        <p data-i18n="price.faq2a">Лимитами на автоматизацию и уровнем поддержки.</p>
       </details>
       <details class="faq-item">
-        <summary>Можно ли сменить тариф позже?</summary>
-        <p>Да, администратор может изменить тариф в админке в профиле пользователя.</p>
+        <summary data-i18n="price.faq3q">Можно ли сменить тариф позже?</summary>
+        <p data-i18n="price.faq3a">Да, администратор может изменить тариф в профиле пользователя.</p>
       </details>
       <details class="faq-item">
-        <summary>Кому подходит тариф «Средний»?</summary>
-        <p>Малому бизнесу и командам, которым нужна регулярная автоматизация и заявки на компанию.</p>
+        <summary data-i18n="price.faq4q">Кому подходит тариф Premium?</summary>
+        <p data-i18n="price.faq4a">Малому бизнесу и командам, которым нужна регулярная автоматизация.</p>
       </details>
     </div>
   </div>
@@ -108,13 +171,13 @@
 <section class="cta">
   <div class="container cta__row">
     <div>
-      <p class="section-badge section-badge--soft">Старт</p>
-      <h2>Готовы начать работу с AdWeave?</h2>
-      <p>Создайте аккаунт, выберите тариф и начните автоматизацию маркетинга в Threads.</p>
+      <p class="section-badge section-badge--soft" data-i18n="price.cta_badge">Старт</p>
+      <h2 data-i18n="price.cta_title">Готовы начать работу с AdWeave?</h2>
+      <p data-i18n="price.cta_sub">Создайте аккаунт, выберите тариф и начните автоматизацию маркетинга в Threads.</p>
     </div>
     <div class="cta__actions">
-      <a class="btn btn--primary" href="{% url 'accounts:register' %}">Начать бесплатно</a>
-      <a class="btn btn--dark" href="{% url 'company_application_create' %}">Оставить заявку</a>
+      <a class="btn btn--primary" href="{% url 'accounts:register' %}" data-i18n="price.start_free">Начать бесплатно</a>
+      <a class="btn btn--dark" href="{% url 'contacts' %}" data-i18n="price.contact">Связаться с нами</a>
     </div>
   </div>
 </section>

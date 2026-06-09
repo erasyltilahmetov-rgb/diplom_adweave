@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}О нас — AdWeave{% endblock %}
+
+{% block content %}
+<section class="pricing-hero">
+  <div class="container pricing-hero__grid">
+    <div>
+      <p class="section-badge">О проекте</p>
+      <h1 class="section-title">Мы автоматизируем маркетинг в Threads</h1>
+      <p class="section-lead">AdWeave — дипломный проект студента IITU, созданный как AI-платформа для управления маркетинговыми кампаниями в социальной сети Threads.</p>
+    </div>
+    <div class="pricing-hero__visual" aria-hidden="true">
+      <div class="pricing-hero__blob"></div>
+      <div class="pricing-hero__card">
+        <div class="pricing-hero__chip">2026</div>
+        <p>IITU</p>
+        <strong>Диплом</strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features" style="padding:60px 0">
+  <div class="container">
+    <p class="section-badge section-badge--center">Миссия</p>
+    <h2 class="section-title section-title--center">Зачем мы это делаем</h2>
+    <p class="section-lead" style="text-align:center;max-width:640px;margin:0 auto 48px">Маркетологи тратят часы на создание контента и ручную публикацию. AdWeave автоматизирует этот процесс с помощью AI — от генерации текста до аналитики.</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-card__icon">🤖</div>
+        <h3 class="feature-card__title">AI-генерация</h3>
+        <p class="feature-card__text">
+          Встроенный AI на базе Llama 3.1 переписывает ваши тексты в нативный стиль Threads,
+          используя реальные примеры из базы постов.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card__icon">📅</div>
+        <h3 class="feature-card__title">Автопостинг</h3>
+        <p class="feature-card__text">
+          Планируйте публикации наперёд и запускайте кампании по расписанию
+          через официальный Threads API.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-card__icon">📊</div>
+        <h3 class="feature-card__title">Аналитика</h3>
+        <p class="feature-card__text">
+          Отслеживайте охваты, лайки, ответы и репосты в едином дашборде.
+          Синхронизация с Threads API в один клик.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding:60px 0;background:var(--surface)">
+  <div class="container">
+    <p class="section-badge section-badge--center">Команда</p>
+    <h2 class="section-title section-title--center">Кто за этим стоит</h2>
+    <div style="display:flex;flex-wrap:wrap;gap:24px;justify-content:center;margin-top:40px">
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 32px;text-align:center;flex:1;min-width:260px;max-width:320px">
+        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#6d63ff,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;color:#fff;margin:0 auto 14px">Н</div>
+        <h3 style="font-size:1rem;font-weight:700;margin:0 0 4px">Дарбаева Нурия</h3>
+        <p style="color:#6d63ff;font-size:.8rem;font-weight:600;margin:0 0 14px">Researcher · Project Manager</p>
+        <div style="text-align:left;display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+          <div><span style="background:#6d63ff18;color:#6d63ff;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:20px">Notion</span><span style="color:var(--text-muted);font-size:.78rem;margin-left:8px">— документация, wiki, таск-трекинг</span></div>
+          <div><span style="background:#6d63ff18;color:#6d63ff;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:20px">Figma</span><span style="color:var(--text-muted);font-size:.78rem;margin-left:8px">— вайрфреймы и прототипы экранов</span></div>
+          <div><span style="background:#6d63ff18;color:#6d63ff;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:20px">Miro</span><span style="color:var(--text-muted);font-size:.78rem;margin-left:8px">— карта пользователя, бизнес-процессы</span></div>
+          <div><span style="background:#6d63ff18;color:#6d63ff;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:20px">Agile / Scrum</span><span style="color:var(--text-muted);font-size:.78rem;margin-left:8px">— итерации, спринты, ретроспективы</span></div>
+        </div>
+        <p style="color:var(--text-muted);font-size:.82rem;line-height:1.6;margin:0;text-align:left">Сформулировала идею продукта и бизнес-логику. Провела исследование рынка и конкурентов, определила целевую аудиторию. Вела требования, документацию и Agile-процесс команды.</p>
+      </div>
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 32px;text-align:center;flex:1;min-width:260px;max-width:320px">
+        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#059669,#34d399);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;color:#fff;margin:0 auto 14px">Е</div>
+        <h3 style="font-size:1rem;font-weight:700;margin:0 0 4px">Тилахметов Ерасыл</h3>
+        <p style="color:#059669;font-size:.8rem;font-weight:600;margin:0 0 14px">Full-stack Developer · Data Engineer</p>
+        <div style="text-align:left;display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+          <div><span style="background:#05966918;color:#059669;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:20px">Python</span><span style="color:var(--text-muted);font-size:.78rem;margin-left:8px">— основной язык всей логики платформы</span></div>
+          <div><span style="background:#05966918;color:#059669;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:20px">Django 6</span><span style="color:var(--text-muted);font-size:.78rem;margin-left:8px">— веб-фреймворк, ORM, роутинг, admin</span></div>
+          <div><span style="background:#05966918;color:#059669;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:20px">Llama 3.1</span><span style="color:var(--text-muted);font-size:.78rem;margin-left:8px">— LLM для генерации и переписывания текстов</span></div>
+          <div><span style="background:#05966918;color:#059669;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:20px">Ollama</span><span style="color:var(--text-muted);font-size:.78rem;margin-left:8px">— локальный запуск LLM без облака</span></div>
+          <div><span style="background:#05966918;color:#059669;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:20px">Playwright</span><span style="color:var(--text-muted);font-size:.78rem;margin-left:8px">— сбор постов из Threads для датасета</span></div>
+          <div><span style="background:#05966918;color:#059669;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:20px">Threads API</span><span style="color:var(--text-muted);font-size:.78rem;margin-left:8px">— публикация постов через официальный API Meta</span></div>
+          <div><span style="background:#05966918;color:#059669;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:20px">Docker</span><span style="color:var(--text-muted);font-size:.78rem;margin-left:8px">— контейнеризация и деплой всего стека</span></div>
+          <div><span style="background:#05966918;color:#059669;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:20px">SQLite</span><span style="color:var(--text-muted);font-size:.78rem;margin-left:8px">— хранение датасета постов для AI</span></div>
+        </div>
+        <p style="color:var(--text-muted);font-size:.82rem;line-height:1.6;margin:0;text-align:left">Разработал всю платформу с нуля: бэкенд, AI-генерацию, скрапер, интеграцию с Threads API, систему аналитики и деплой в Docker.</p>
+      </div>
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px 32px;text-align:center;flex:1;min-width:260px;max-width:320px">
+        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#d97706,#fbbf24);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;color:#fff;margin:0 auto 14px">К</div>
+        <h3 style="font-size:1rem;font-weight:700;margin:0 0 4px">Булхаир Касым</h3>
+        <p style="color:#d97706;font-size:.8rem;font-weight:600;margin:0 0 14px">UI/UX Designer · Frontend</p>
+        <div style="text-align:left;display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+          <div><span style="background:#d9770618;color:#d97706;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:20px">Figma</span><span style="color:var(--text-muted);font-size:.78rem;margin-left:8px">— макеты всех экранов и компонентная библиотека</span></div>
+          <div><span style="background:#d9770618;color:#d97706;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:20px">HTML / CSS</span><span style="color:var(--text-muted);font-size:.78rem;margin-left:8px">— вёрстка интерфейса, адаптив, анимации</span></div>
+          <div><span style="background:#d9770618;color:#d97706;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:20px">JavaScript</span><span style="color:var(--text-muted);font-size:.78rem;margin-left:8px">— интерактивность, переключение тем, i18n</span></div>
+          <div><span style="background:#d9770618;color:#d97706;font-size:.72rem;font-weight:700;padding:2px 10px;border-radius:20px">Design System</span><span style="color:var(--text-muted);font-size:.78rem;margin-left:8px">— единые токены цветов, типографики и компонентов</span></div>
+        </div>
+        <p style="color:var(--text-muted);font-size:.82rem;line-height:1.6;margin:0;text-align:left">Разработал визуальную концепцию и дизайн-систему продукта. Реализовал все страницы, адаптивную вёрстку, светлую и тёмную тему, систему переводов интерфейса.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="container cta__row">
+    <div>
+      <p class="section-badge section-badge--soft">Старт</p>
+      <h2>Попробуйте AdWeave бесплатно</h2>
+      <p>Зарегистрируйтесь и получите доступ к AI-инструментам для Threads.</p>
+    </div>
+    <div class="cta__actions">
+      <a class="btn btn--primary" href="{% url 'accounts:register' %}">Начать бесплатно</a>
+      <a class="btn btn--dark" href="{% url 'contacts' %}">Связаться</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -11,20 +11,20 @@
         <p class="dashboard__subtitle" data-i18n="camp.subtitle">Список маркетинговых кампаний и их текущий статус.</p>
       </div>
       <div class="dashboard__actions">
-        <a class="btn btn--primary" href="/admin/campaigns/campaign/add/" data-i18n="camp.add">Добавить кампанию</a>
+        <a class="btn btn--primary" href="/admin/campaigns/campaign/add/" data-i18n="camp.add" data-i18n="camp.add">Добавить кампанию</a>
       </div>
     </div>
 
     <div class="table-card">
-      <h2 class="table-card__title">Все кампании</h2>
+      <h2 class="table-card__title" data-i18n="camp.all">Все кампании</h2>
       {% if campaigns %}
         <table class="table">
           <thead>
             <tr>
-              <th>Название</th>
-              <th>Статус</th>
-              <th>Период</th>
-              <th>Обновлено</th>
+              <th data-i18n="camp.col.name">Название</th>
+              <th data-i18n="camp.col.status">Статус</th>
+              <th data-i18n="camp.col.period">Период</th>
+              <th data-i18n="camp.col.updated">Обновлено</th>
             </tr>
           </thead>
           <tbody>
@@ -51,7 +51,7 @@
           </tbody>
         </table>
       {% else %}
-        <p class="empty" data-i18n="camp.no_camps">Кампаний пока нет. Начните с создания кампании в админке.</p>
+        <p class="empty" data-i18n="camp.no_camps" data-i18n="camp.no_camps">Кампаний пока нет. Начните с создания кампании в админке.</p>
       {% endif %}
     </div>
   </div>

@@ -65,7 +65,6 @@
           <button class="btn btn--primary btn--logout" type="submit" data-i18n="nav.logout">Выйти</button>
         </form>
       {% else %}
-        <a class="btn btn--outline" href="{% url 'company_application_create' %}" data-i18n="nav.application">Заявка</a>
         <a class="btn btn--ghost" href="{% url 'accounts:login' %}" data-i18n="nav.login">Войти</a>
         <a class="btn btn--primary" href="{% url 'accounts:register' %}" data-i18n="nav.register">Регистрация</a>
       {% endif %}

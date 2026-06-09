@@ -59,19 +59,36 @@
       </section>
 
       <section class="panel accounts-panel">
-        <h2 class="panel__title" data-i18n="acc.my">Мои аккаунты</h2>
+        <h2 class="panel__title" data-i18n="acc.my" data-i18n="acc.my">Мои аккаунты</h2>
         {% if accounts %}
           <div class="accounts-list">
             {% for account in accounts %}
-              <article class="accounts-item">
+              {% with token_expired=account.token_expires_at|default_if_none:False %}
+              <article class="accounts-item {% if account.token_expires_at and account.token_expires_at < now %}accounts-item--expired{% endif %}">
                 <div>
                   <p class="accounts-item__title">@{{ account.username }}</p>
                   <p class="accounts-item__meta">
                     {% if account.is_active %}Активен{% else %}Выключен{% endif %}
-                    · {% if account.access_token %}token задан{% else %}token из demo{% endif %}
+                    · {% if account.access_token %}токен задан{% else %}демо-токен{% endif %}
+                    {% if account.token_expires_at %}
+                      · {% if account.token_expires_at < now %}
+                          <span style="color:#ef4444;font-weight:600">⚠ Токен истёк {{ account.token_expires_at|date:"d.m.Y" }}</span>
+                        {% else %}
+                          <span style="color:#888">истекает {{ account.token_expires_at|date:"d.m.Y" }}</span>
+                        {% endif %}
+                    {% endif %}
                   </p>
                 </div>
                 <div class="accounts-item__actions">
+                  {% if account.access_token and account.token_expires_at and account.token_expires_at >= now %}
+                    <form method="post" action="{% url 'threads_accounts:refresh_token' account.id %}">
+                      {% csrf_token %}
+                      <button class="btn btn--outline btn--small" type="submit" title="Продлить токен (работает пока токен не истёк)">Обновить токен</button>
+                    </form>
+                  {% endif %}
+                  {% if oauth_ready %}
+                    <a class="btn btn--primary btn--small" href="{% url 'threads_accounts:oauth_start' %}">Переподключить</a>
+                  {% endif %}
                   <a class="btn btn--outline btn--small" href="{% url 'threads_accounts:edit' account.id %}">Изменить</a>
                   <form method="post" action="{% url 'threads_accounts:delete' account.id %}">
                     {% csrf_token %}
@@ -79,10 +96,11 @@
                   </form>
                 </div>
               </article>
+              {% endwith %}
             {% endfor %}
           </div>
         {% else %}
-          <p class="empty" data-i18n="acc.no_accounts">Пока нет подключенных аккаунтов. Добавьте первый аккаунт слева.</p>
+          <p class="empty" data-i18n="acc.no_accounts" data-i18n="acc.no_accounts">Пока нет подключенных аккаунтов. Добавьте первый аккаунт слева.</p>
         {% endif %}
       </section>
     </div>

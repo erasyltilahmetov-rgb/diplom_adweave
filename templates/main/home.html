@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}AdWeave — Главная{% endblock %}
 
@@ -12,10 +13,7 @@
         <span class="text-gradient">сервис генерации</span>
         текстов
       </h1>
-      <p class="hero__lead">
-        Эффективно для маркетинга: автоматизируйте создание контента, планируйте публикации
-        и управляйте кампаниями в Threads через единый интерфейс.
-      </p>
+      <p class="hero__lead">Эффективно для маркетинга: автоматизируйте создание контента, планируйте публикации и управляйте кампаниями в Threads через единый интерфейс.</p>
       <div class="hero__actions">
         <a class="btn btn--primary" href="#features">Начать бесплатно</a>
         <a class="btn btn--outline" href="#how">Как это работает</a>
@@ -39,7 +37,10 @@
     <div class="hero__visual" aria-hidden="true">
       <div class="hero-card">
         <div class="hero-card__glow"></div>
-        <div class="hero-card__image"></div>
+        <div class="hero-card__image">
+          <img src="{% static 'img/black_first.png' %}" alt="" class="theme-img theme-img--dark">
+          <img src="{% static 'img/white_first.png' %}" alt="" class="theme-img theme-img--light">
+        </div>
       </div>
       <div class="hero-blob hero-blob--one"></div>
       <div class="hero-blob hero-blob--two"></div>
@@ -50,15 +51,15 @@
 <section id="how" class="split">
   <div class="container split__grid">
     <div class="split__visual" aria-hidden="true">
-      <div class="blob-image blob-image--dark"></div>
+      <div class="blob-image">
+        <img src="{% static 'img/black_second.png' %}" alt="" class="theme-img theme-img--dark">
+        <img src="{% static 'img/white_second.png' %}" alt="" class="theme-img theme-img--light">
+      </div>
     </div>
     <div class="split__content">
       <p class="section-badge section-badge--soft">AI + автоматизация</p>
       <h2 class="section-title">Интеллектуальные технологии для эффективного маркетинга</h2>
-      <p class="section-lead">
-        AdWeave объединяет генеративный AI, планировщик публикаций и аналитику, чтобы вы
-        запускали кампании быстрее и получали предсказуемый результат.
-      </p>
+      <p class="section-lead">AdWeave объединяет генеративный AI, планировщик публикаций и аналитику, чтобы вы запускали кампании быстрее и получали предсказуемый результат.</p>
 
       <div class="feature-list">
         <article class="feature-item">
@@ -181,10 +182,7 @@
     <div>
       <p class="section-badge section-badge--soft">Threads + AI</p>
       <h2>Готовы автоматизировать маркетинг в Threads?</h2>
-      <p>
-        Попробуйте AdWeave и получите инструмент, который помогает выпускать больше контента
-        и принимать решения на основе данных.
-      </p>
+      <p>Попробуйте AdWeave и получите инструмент, который помогает выпускать больше контента и принимать решения на основе данных.</p>
     </div>
     <div class="cta__actions">
       <a class="btn btn--primary" href="#">Начать бесплатно</a>

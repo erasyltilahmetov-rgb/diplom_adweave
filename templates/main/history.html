@@ -3,7 +3,7 @@
 {% block title %}История постов — AdWeave{% endblock %}
 
 {% block content %}
-<section class="dashboard history-page">
+<section class="dashboard history-page" data-i18n-auto>
   <div class="container">
     <div class="dashboard__header">
       <div>
@@ -70,7 +70,7 @@
                 </div>
                 <div style="display:flex;align-items:center;gap:8px">
                   <code style="font-size:.7rem;color:#555;background:#111;padding:3px 8px;border-radius:6px">{{ post.threads_thread_id|truncatechars:16 }}</code>
-                  <a href="https://www.threads.com/@{{ post.user.username }}/post/{{ post.threads_thread_id }}" target="_blank" title="Открыть в Threads" style="color:#6d63ff;display:flex;align-items:center;text-decoration:none">
+                  <a href="{% if post.threads_permalink %}{{ post.threads_permalink }}{% else %}https://www.threads.com/@{{ post.threads_account.username }}/post/{{ post.threads_thread_id }}{% endif %}" target="_blank" title="Открыть в Threads" style="color:#6d63ff;display:flex;align-items:center;text-decoration:none">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                   </a>
                   <form method="post" action="{% url 'post_delete_remote' post.id %}" style="margin:0">
@@ -152,11 +152,11 @@
         <table class="table">
           <thead>
             <tr>
-              <th>Пост</th>
-              <th>Кампания</th>
-              <th>Статус</th>
-              <th>Обновлено</th>
-              <th>Действия</th>
+              <th data-i18n="col.post">Пост</th>
+              <th data-i18n="col.campaign">Кампания</th>
+              <th data-i18n="col.status">Статус</th>
+              <th data-i18n="col.updated">Обновлено</th>
+              <th data-i18n="col.actions">Действия</th>
             </tr>
           </thead>
           <tbody>

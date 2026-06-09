@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from .forms import ThreadsAccountForm
 from .models import ThreadsAccount
-from .oauth import ThreadsOAuthError, build_authorize_url, complete_oauth
+from .oauth import ThreadsOAuthError, build_authorize_url, complete_oauth, refresh_long_lived_token
 
 
 OAUTH_STATE_SESSION_KEY = "threads_oauth_state"
@@ -38,6 +38,27 @@ def account_delete(request, account_id: int):
         messages.success(request, "Аккаунт удален.")
         return redirect("accounts")
     return render(request, "threads_accounts/account_delete.html", {"account": account})
+
+
+@login_required
+def account_refresh_token(request, account_id: int):
+    account = get_object_or_404(ThreadsAccount, pk=account_id, user=request.user)
+    if request.method != "POST":
+        return redirect("accounts")
+    try:
+        data = refresh_long_lived_token(account.access_token)
+        new_token = data.get("access_token")
+        expires_in = data.get("expires_in")
+        if not new_token:
+            raise ThreadsOAuthError(f"Нет access_token в ответе: {data}")
+        account.access_token = new_token
+        if expires_in:
+            account.token_expires_at = timezone.now() + timedelta(seconds=int(expires_in))
+        account.save(update_fields=["access_token", "token_expires_at", "updated_at"])
+        messages.success(request, f"Токен @{account.username} обновлён. Действует ещё {expires_in // 86400 if expires_in else '?'} дней.")
+    except ThreadsOAuthError as exc:
+        messages.error(request, f"Не удалось обновить токен: {exc}. Токен истёк — переподключите аккаунт через OAuth.")
+    return redirect("accounts")
 
 
 @login_required

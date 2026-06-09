@@ -1,0 +1,363 @@
+{% extends "base.html" %}
+{% block title %}Live Scraper — AdWeave{% endblock %}
+
+{% block content %}
+<section class="dashboard" data-i18n-auto>
+<div class="container">
+
+  <div class="dashboard__header">
+    <div>
+      <h1 class="dashboard__title">Live Threads Scraper</h1>
+      <p class="dashboard__subtitle">Браузер открывает Threads в реальном времени и собирает посты прямо в базу.</p>
+    </div>
+    <div class="dashboard__actions">
+      {% if packs %}<a class="btn btn--outline" href="{% url 'ai_generator:pack_detail' packs.0.id %}">Последний пак →</a>{% endif %}
+      <a class="btn btn--ghost" href="{% url 'monitoring' %}">← Мониторинг</a>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="panel" style="margin-bottom:20px">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <!-- Search row -->
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="position:relative;flex:1;min-width:200px">
+          <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:.9rem">🔍</span>
+          <input id="searchQuery" type="text" placeholder="Поиск в Threads: ПСЖ, Казахстан, AI..."
+            style="width:100%;padding:9px 14px 9px 36px;background:var(--surface-muted);border:1px solid var(--border);border-radius:10px;font-size:.88rem;color:var(--text)">
+        </div>
+        <span style="font-size:.78rem;color:var(--text-muted)">или оставь пустым для главной ленты</span>
+      </div>
+      <!-- Controls row -->
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:10px">
+          <label style="font-size:.88rem;color:var(--text-muted)">Постов:</label>
+          <input type="range" id="scrollsRange" min="5" max="200" value="30" step="5" style="width:100px;accent-color:#6d63ff">
+          <span id="scrollsVal" style="font-size:.88rem;font-weight:700;color:#6d63ff;min-width:28px">30</span>
+        </div>
+        <button id="startBtn" class="btn btn--primary" onclick="startScrape()">▶ Запустить</button>
+        <button id="stopBtn" class="btn btn--outline" onclick="stopScrape()" disabled>■ Стоп</button>
+        <button id="saveBtn" class="btn btn--outline" onclick="savePack()" disabled style="border-color:#22c55e;color:#22c55e">💾 Сохранить пак</button>
+        <div id="statusBadge" style="display:none;align-items:center;gap:6px;font-size:.83rem;color:#22c55e;font-weight:600">
+          <span id="statusDot" style="width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;animation:pulse 1s infinite"></span>
+          <span id="statusText">Запускаю...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Browser + Log row -->
+  <div style="display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start;margin-bottom:24px">
+
+    <!-- Browser view -->
+    <div class="panel" style="padding:0;overflow:hidden">
+      <div style="background:#1a1a2e;padding:10px 16px;display:flex;align-items:center;gap:8px">
+        <div style="display:flex;gap:5px">
+          <span style="width:12px;height:12px;border-radius:50%;background:#ef4444"></span>
+          <span style="width:12px;height:12px;border-radius:50%;background:#f59e0b"></span>
+          <span style="width:12px;height:12px;border-radius:50%;background:#22c55e"></span>
+        </div>
+        <div id="urlBar" style="flex:1;background:#0f0f1a;border-radius:6px;padding:5px 12px;font-size:.78rem;color:#888;font-family:monospace">
+          https://www.threads.com
+        </div>
+      </div>
+      <div style="position:relative;min-height:460px;background:#0a0a0f;display:flex;align-items:center;justify-content:center">
+        <!-- Idle placeholder -->
+        <div id="browserPlaceholder" style="text-align:center;color:#333">
+          <div style="font-size:3rem;margin-bottom:12px">🌐</div>
+          <p style="font-size:.9rem">Нажмите «Запустить скрапер»</p>
+        </div>
+        <!-- Loading animation -->
+        <div id="browserLoader" style="display:none;text-align:center">
+          <div style="width:56px;height:56px;border:3px solid #1a1a2e;border-top:3px solid #6d63ff;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 20px"></div>
+          <p style="color:#555;font-size:.85rem;font-family:monospace">Открываю браузер...</p>
+        </div>
+        <!-- Actual screenshot -->
+        <img id="browserScreen" style="display:none;width:100%;height:auto;max-height:560px;object-fit:contain" alt="">
+        <div id="liveTag" style="display:none;position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.7);color:#22c55e;font-size:.72rem;padding:4px 10px;border-radius:20px;font-family:monospace">LIVE</div>
+      </div>
+      <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+    </div>
+
+    <!-- Log -->
+    <div class="panel" style="padding:16px">
+      <h3 style="font-size:.8rem;font-weight:700;margin:0 0 10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em">Лог</h3>
+      <div id="logContainer" style="background:#0a0a0f;border-radius:10px;padding:12px;font-family:monospace;font-size:.73rem;color:#4ade80;min-height:200px;max-height:460px;overflow-y:auto;line-height:1.8">
+        <span style="color:#555">_ ожидание запуска</span>
+      </div>
+
+      <!-- Saved packs -->
+      {% if packs %}
+      <h3 style="font-size:.8rem;font-weight:700;margin:20px 0 10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em">Сохранённые паки</h3>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        {% for pack in packs %}
+        <a href="{% url 'ai_generator:pack_detail' pack.id %}" style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--surface-muted);border:1px solid var(--border);border-radius:10px;text-decoration:none;font-size:.8rem;color:var(--text)">
+          <span>{{ pack.name|truncatechars:28 }}</span>
+          <span style="color:var(--text-muted);font-size:.75rem">{{ pack.posts_count }} постов</span>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Filter bar (shown after scrape starts) -->
+  <div id="filterBar" style="display:none;margin-bottom:16px">
+    <div class="panel" style="padding:14px 20px">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <input id="filterQ" type="text" placeholder="🔍 Поиск по тексту..." oninput="filterPosts()"
+          style="flex:1;min-width:160px;background:var(--surface-muted);border:1px solid var(--border);border-radius:10px;padding:7px 14px;font-size:.85rem;color:var(--text)">
+        <select id="filterSort" onchange="filterPosts()" style="background:var(--surface-muted);border:1px solid var(--border);border-radius:10px;padding:7px 12px;font-size:.85rem;color:var(--text)">
+          <option value="newest">Новые</option>
+          <option value="likes">Топ по лайкам</option>
+          <option value="replies">Топ по комментам</option>
+          <option value="reposts">Топ по репостам</option>
+        </select>
+        <div style="display:flex;align-items:center;gap:8px">
+          <label style="font-size:.82rem;color:var(--text-muted)">Мин. лайков:</label>
+          <input id="filterMinLikes" type="number" min="0" value="0" oninput="filterPosts()"
+            style="width:70px;background:var(--surface-muted);border:1px solid var(--border);border-radius:10px;padding:7px 10px;font-size:.85rem;color:var(--text)">
+        </div>
+        <span id="filteredCount" style="font-size:.82rem;color:var(--text-muted);margin-left:auto"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Posts feed (Threads style) -->
+  <div id="postsFeed" style="display:none">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h2 style="font-size:1rem;font-weight:700;margin:0">Найдено постов <span id="postCount" style="background:#6d63ff22;color:#6d63ff;font-size:.85rem;padding:2px 10px;border-radius:20px;border:1px solid #6d63ff44;margin-left:8px">0</span></h2>
+    </div>
+    <div id="postsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px"></div>
+    <p id="noResults" style="display:none;color:var(--text-muted);text-align:center;padding:32px">Нет постов по фильтру</p>
+  </div>
+
+</div>
+</section>
+
+<style>
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+</style>
+
+<script>
+let evtSource = null;
+let allPosts = [];
+
+document.getElementById('scrollsRange').addEventListener('input', function() {
+  document.getElementById('scrollsVal').textContent = this.value;
+});
+
+function addLog(msg, color) {
+  const c = document.getElementById('logContainer');
+  const line = document.createElement('div');
+  line.style.color = color || '#4ade80';
+  const t = new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  line.textContent = `[${t}] ${msg}`;
+  if (c.querySelector('span')) c.innerHTML = '';
+  c.appendChild(line);
+  c.scrollTop = c.scrollHeight;
+}
+
+const LANG_COLOR = {ru:'6d63ff', kz:'059669', en:'d97706'};
+
+function buildPostCard(p) {
+  const initial = (p.username || '?')[0].toUpperCase();
+  const lang = p.lang || 'ru';
+  const lc = LANG_COLOR[lang] || '888';
+  const entities = (p.entities || []).slice(0,5).map(e =>
+    `<span style="background:#6d63ff11;color:#6d63ff;font-size:.68rem;padding:1px 7px;border-radius:8px">${escHtml(e)}</span>`
+  ).join('');
+
+  const card = document.createElement('article');
+  card.className = 'scrape-post-card';
+  card.dataset.text = p.text.toLowerCase();
+  card.dataset.lang = lang;
+  card.dataset.likes = p.likes || 0;
+  card.dataset.replies = p.replies || 0;
+  card.dataset.reposts = p.reposts || 0;
+  card.style.cssText = 'background:#181818;border-radius:14px;padding:16px;border:1px solid #2e2e2e;position:relative;overflow:hidden;animation:fadeIn .3s ease';
+
+  card.innerHTML = `
+    <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#6d63ff,#a78bfa44)"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="position:relative;flex-shrink:0">
+        <div style="width:38px;height:38px;border-radius:50%;background:#3a3a3a;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;color:#fff">${initial}</div>
+        <div style="position:absolute;bottom:-2px;right:-2px;width:16px;height:16px;background:#${lc};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;border:2px solid #181818">${lang.toUpperCase()[0]}</div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:.88rem;color:#fff">${p.username ? '@'+escHtml(p.username) : 'threads user'}</div>
+        <div style="font-size:.7rem;color:#888;display:flex;gap:6px;flex-wrap:wrap;margin-top:2px">${entities}</div>
+      </div>
+      <span style="font-size:.7rem;background:#${lc}22;color:#${lc};border:1px solid #${lc}44;border-radius:20px;padding:2px 8px;flex-shrink:0">${lang.toUpperCase()}</span>
+    </div>
+    <p style="font-size:.88rem;line-height:1.6;color:#e0e0e0;margin:0 0 12px;white-space:pre-wrap;word-break:break-word">${escHtml(p.text)}</p>
+    <div style="display:flex;gap:20px;color:#555;font-size:.78rem">
+      <span title="Лайки">❤ ${p.likes || 0}</span>
+      <span title="Комменты">💬 ${p.replies || 0}</span>
+      <span title="Репосты">🔁 ${p.reposts || 0}</span>
+    </div>
+  `;
+  return card;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function addPostCard(p) {
+  allPosts.push(p);
+  document.getElementById('postCount').textContent = allPosts.length;
+  document.getElementById('postsFeed').style.display = 'block';
+  document.getElementById('filterBar').style.display = 'block';
+
+  const card = buildPostCard(p);
+  const grid = document.getElementById('postsGrid');
+  grid.prepend(card);
+  while (grid.children.length > 200) grid.lastChild.remove();
+
+  updateFilteredCount();
+}
+
+function filterPosts() {
+  const q = document.getElementById('filterQ').value.toLowerCase();
+  const lang = document.getElementById('filterLang').value;
+  const sort = document.getElementById('filterSort').value;
+  const minLikes = parseInt(document.getElementById('filterMinLikes').value) || 0;
+
+  let filtered = allPosts.filter(p =>
+    (!q || p.text.toLowerCase().includes(q)) &&
+    (lang === 'all' || p.lang === lang) &&
+    ((p.likes || 0) >= minLikes)
+  );
+
+  if (sort === 'likes') filtered.sort((a,b) => (b.likes||0)-(a.likes||0));
+  else if (sort === 'replies') filtered.sort((a,b) => (b.replies||0)-(a.replies||0));
+  else if (sort === 'reposts') filtered.sort((a,b) => (b.reposts||0)-(a.reposts||0));
+  // newest = default order (prepended)
+
+  const grid = document.getElementById('postsGrid');
+  grid.innerHTML = '';
+  filtered.slice(0,100).forEach(p => grid.appendChild(buildPostCard(p)));
+
+  document.getElementById('noResults').style.display = filtered.length === 0 ? 'block' : 'none';
+  document.getElementById('filteredCount').textContent = `Показано: ${Math.min(filtered.length,100)} из ${allPosts.length}`;
+}
+
+function updateFilteredCount() {
+  document.getElementById('filteredCount').textContent = `Всего: ${allPosts.length}`;
+}
+
+function startScrape() {
+  if (evtSource) { evtSource.close(); evtSource = null; }
+  allPosts = [];
+  document.getElementById('postCount').textContent = '0';
+  document.getElementById('postsGrid').innerHTML = '';
+  document.getElementById('noResults').style.display = 'none';
+  document.getElementById('logContainer').innerHTML = '';
+  document.getElementById('browserPlaceholder').style.display = 'none';
+  document.getElementById('browserLoader').style.display = 'block';
+  document.getElementById('browserScreen').style.display = 'none';
+  document.getElementById('liveTag').style.display = 'block';
+  document.getElementById('liveTag').textContent = 'LIVE';
+  document.getElementById('liveTag').style.color = '#22c55e';
+  document.getElementById('statusBadge').style.display = 'flex';
+  document.getElementById('statusDot').style.background = '#22c55e';
+  document.getElementById('statusDot').style.animationPlayState = 'running';
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('stopBtn').disabled = false;
+  document.getElementById('saveBtn').disabled = true;
+  document.getElementById('saveBtn').textContent = '💾 Сохранить пак';
+
+  const maxPosts = document.getElementById('scrollsRange').value;
+  const q = encodeURIComponent(document.getElementById('searchQuery').value.trim());
+  const urlBar = document.getElementById('urlBar');
+  urlBar.textContent = q ? `https://www.threads.com/search?q=${decodeURIComponent(q)}` : 'https://www.threads.com — загрузка...';
+
+  const uiLang = localStorage.getItem('adweave_lang') || 'ru';
+  const streamUrl = `{% url 'ai_generator:live_scrape_stream' %}?max_posts=${maxPosts}${q ? '&q='+q : ''}&lang=${uiLang}`;
+  evtSource = new EventSource(streamUrl);
+
+  evtSource.onmessage = function(e) {
+    let data;
+    try { data = JSON.parse(e.data); } catch { return; }
+
+    if (data.type === 'screenshot') {
+      document.getElementById('browserLoader').style.display = 'none';
+      document.getElementById('browserScreen').style.display = 'block';
+      document.getElementById('browserScreen').src = 'data:image/jpeg;base64,' + data.img;
+      if (!q) urlBar.textContent = 'https://www.threads.com';
+    } else if (data.type === 'log') {
+      addLog(data.msg);
+      document.getElementById('statusText').textContent = data.msg;
+    } else if (data.type === 'post') {
+      addPostCard(data);
+    } else if (data.type === 'error') {
+      const errLabel = {'ru':'ОШИБКА','en':'ERROR','kz':'ҚАТЕ'}[uiLang]||'ОШИБКА';
+      addLog(errLabel + ': ' + data.msg, '#ef4444');
+      finishScrape();
+    } else if (data.type === 'done') {
+      const doneMsg = {'ru':`Готово! Найдено ${allPosts.length} постов.`,'en':`Done! Found ${allPosts.length} posts.`,'kz':`Дайын! Табылды ${allPosts.length} жазба.`}[uiLang];
+      const doneStatus = {'ru':`Готово · ${allPosts.length} постов`,'en':`Done · ${allPosts.length} posts`,'kz':`Дайын · ${allPosts.length} жазба`}[uiLang];
+      addLog(doneMsg, '#f59e0b');
+      document.getElementById('statusText').textContent = doneStatus;
+      document.getElementById('statusDot').style.animationPlayState = 'paused';
+      document.getElementById('statusDot').style.background = '#f59e0b';
+      document.getElementById('liveTag').textContent = 'DONE';
+      document.getElementById('liveTag').style.color = '#f59e0b';
+      finishScrape();
+    }
+  };
+  evtSource.onerror = function() {
+    const closedMsg = {'ru':'Соединение закрыто.','en':'Connection closed.','kz':'Байланыс жабылды.'}[uiLang]||'Соединение закрыто.';
+    addLog(closedMsg, '#888');
+    finishScrape();
+  };
+}
+
+function stopScrape() {
+  // Сигнализируем серверу остановиться
+  fetch('{% url "ai_generator:live_scrape_stop" %}', {
+    method: 'POST',
+    headers: {'X-CSRFToken': getCookie('csrftoken')}
+  });
+  if (evtSource) { evtSource.close(); evtSource = null; }
+  addLog('Остановлено пользователем.', '#888');
+  finishScrape();
+}
+
+function finishScrape() {
+  if (evtSource) { evtSource.close(); evtSource = null; }
+  document.getElementById('startBtn').disabled = false;
+  document.getElementById('stopBtn').disabled = true;
+  if (allPosts.length) document.getElementById('saveBtn').disabled = false;
+}
+
+function savePack() {
+  if (!allPosts.length) return;
+  const name = prompt('Название пака:', `Пак ${new Date().toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}`);
+  if (!name) return;
+
+  fetch('{% url "ai_generator:save_pack" %}', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-CSRFToken': getCookie('csrftoken')},
+    body: JSON.stringify({name, posts: allPosts})
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.ok) {
+      addLog(`Пак «${d.name}» сохранён (${d.count} постов).`, '#22c55e');
+      document.getElementById('saveBtn').textContent = '✓ Сохранено';
+      document.getElementById('saveBtn').disabled = true;
+      setTimeout(() => window.location.href = `/ai/packs/${d.pack_id}/`, 800);
+    } else {
+      alert('Ошибка: ' + d.error);
+    }
+  });
+}
+
+function getCookie(name) {
+  return document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith(name+'='))?.split('=')[1]||'';
+}
+</script>
+{% endblock %}

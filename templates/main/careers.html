@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Карьера — AdWeave{% endblock %}
+
+{% block content %}
+<section class="pricing-hero">
+  <div class="container pricing-hero__grid">
+    <div>
+      <p class="section-badge">Карьера</p>
+      <h1 class="section-title">Присоединяйтесь к команде</h1>
+      <p class="section-lead">
+        AdWeave растёт. Если вам близка тема AI и автоматизации маркетинга —
+        мы рады познакомиться.
+      </p>
+      <div class="pricing-hero__actions">
+        <a class="btn btn--primary" href="{% url 'contacts' %}">Написать нам</a>
+      </div>
+    </div>
+    <div class="pricing-hero__visual" aria-hidden="true">
+      <div class="pricing-hero__blob"></div>
+      <div class="pricing-hero__card">
+        <div class="pricing-hero__chip">Join</div>
+        <p>Team</p>
+        <strong>AdWeave</strong>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding:60px 0">
+  <div class="container" style="max-width:760px">
+
+    <p class="section-badge section-badge--center">Вакансии</p>
+    <h2 class="section-title section-title--center">Открытые позиции</h2>
+
+    <div style="margin-top:40px;display:flex;flex-direction:column;gap:16px">
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+        <div>
+          <h3 style="font-size:1rem;font-weight:700;margin:0 0 6px">Backend-разработчик (Python / Django)</h3>
+          <p style="color:var(--text-muted);font-size:.85rem;margin:0">Удалённо · Full-time · Алматы</p>
+        </div>
+        <a class="btn btn--outline btn--small" href="{% url 'contacts' %}">Откликнуться</a>
+      </div>
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+        <div>
+          <h3 style="font-size:1rem;font-weight:700;margin:0 0 6px">ML-инженер (LLM / fine-tuning)</h3>
+          <p style="color:var(--text-muted);font-size:.85rem;margin:0">Удалённо · Part-time</p>
+        </div>
+        <a class="btn btn--outline btn--small" href="{% url 'contacts' %}">Откликнуться</a>
+      </div>
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+        <div>
+          <h3 style="font-size:1rem;font-weight:700;margin:0 0 6px">Frontend-разработчик (JS / CSS)</h3>
+          <p style="color:var(--text-muted);font-size:.85rem;margin:0">Удалённо · Part-time</p>
+        </div>
+        <a class="btn btn--outline btn--small" href="{% url 'contacts' %}">Откликнуться</a>
+      </div>
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+        <div>
+          <h3 style="font-size:1rem;font-weight:700;margin:0 0 6px">SMM / Growth маркетолог</h3>
+          <p style="color:var(--text-muted);font-size:.85rem;margin:0">Удалённо · Part-time · Threads-экспертиза</p>
+        </div>
+        <a class="btn btn--outline btn--small" href="{% url 'contacts' %}">Откликнуться</a>
+      </div>
+
+    </div>
+
+    <div style="margin-top:48px;background:linear-gradient(135deg,rgba(109,99,255,0.1),rgba(127,91,255,0.05));border:1px solid rgba(109,99,255,0.2);border-radius:16px;padding:32px;text-align:center">
+      <h3 style="font-size:1rem;font-weight:700;margin:0 0 8px">Не нашли подходящую вакансию?</h3>
+      <p style="color:var(--text-muted);font-size:.9rem;margin:0 0 16px">Отправьте открытый отклик — мы сохраним ваше резюме и свяжемся при появлении подходящей позиции.</p>
+      <a class="btn btn--primary" href="{% url 'contacts' %}">Открытый отклик</a>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

@@ -3,7 +3,7 @@
 {% block title %}Дашборд — AdWeave{% endblock %}
 
 {% block content %}
-<section class="dashboard">
+<section class="dashboard" data-i18n-auto>
   <div class="container">
     <div class="dashboard__header">
       <div>
@@ -50,7 +50,7 @@
       <section class="panel">
         <div class="panel__head">
           <h2 class="panel__title" data-i18n="dash.analytics">Аналитика профилей</h2>
-          <a class="panel__link" href="{% url 'analytics' %}">Подробнее</a>
+          <a class="panel__link" href="{% url 'analytics' %}" data-i18n="dash.more">Подробнее</a>
         </div>
         {% if latest_profile_analytics %}
           <div class="list">
@@ -67,7 +67,7 @@
             {% endfor %}
           </div>
         {% else %}
-          <p class="empty">Пока нет аналитики профиля. Нажмите «Синхронизировать Threads».</p>
+          <p class="empty" data-i18n="dash.no_analytics">Пока нет аналитики профиля. Нажмите «Синхронизировать Threads».</p>
         {% endif %}
       </section>
 
@@ -100,7 +100,7 @@
       <section class="panel">
         <div class="panel__head">
           <h2 class="panel__title" data-i18n="dash.recent">Последние посты</h2>
-          <a class="panel__link" href="{% url 'history' %}">История</a>
+          <a class="panel__link" href="{% url 'history' %}" data-i18n="nav.history">История</a>
         </div>
         {% if recent_posts %}
           <div class="list">
@@ -122,7 +122,7 @@
       <section class="panel">
         <div class="panel__head">
           <h2 class="panel__title" data-i18n="dash.mentions">Упоминания</h2>
-          <a class="panel__link" href="{% url 'monitoring' %}">Мониторинг</a>
+          <a class="panel__link" href="{% url 'monitoring' %}" data-i18n="nav.monitoring">Мониторинг</a>
         </div>
         {% if latest_mentions %}
           <div class="list">
@@ -144,7 +144,7 @@
       <section class="panel">
         <div class="panel__head">
           <h2 class="panel__title" data-i18n="dash.replies">Ответы</h2>
-          <a class="panel__link" href="{% url 'monitoring' %}">Ответы</a>
+          <a class="panel__link" href="{% url 'monitoring' %}" data-i18n="dash.replies">Ответы</a>
         </div>
         {% if latest_replies %}
           <div class="list">

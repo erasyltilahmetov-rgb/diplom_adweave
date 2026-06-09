@@ -1,11 +1,14 @@
 from django.urls import path
 
 from .views import (
+    about_page,
     accounts_page,
     analytics_page,
+    careers_page,
     compose_page,
     dashboard,
     features_page,
+    help_page,
     history_page,
     home,
     how_page,
@@ -20,6 +23,8 @@ from .views import (
     cases_page,
     contacts_page,
     pricing_page,
+    terms_page,
+    updates_page,
 )
 
 urlpatterns = [
@@ -36,6 +41,11 @@ urlpatterns = [
     path("monitoring/", monitoring_page, name="monitoring"),
     path("permissions/", permissions_page, name="permissions"),
     path("privacy/", privacy_page, name="privacy"),
+    path("terms/", terms_page, name="terms"),
+    path("about/", about_page, name="about"),
+    path("updates/", updates_page, name="updates"),
+    path("help/", help_page, name="help"),
+    path("careers/", careers_page, name="careers"),
     path("posts/", posts_page, name="posts"),
     path("posts/<int:post_id>/publish/", publish_post, name="post_publish"),
     path("posts/<int:post_id>/delete-remote/", delete_post_remote, name="post_delete_remote"),

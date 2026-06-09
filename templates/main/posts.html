@@ -3,7 +3,7 @@
 {% block title %}Посты — AdWeave{% endblock %}
 
 {% block content %}
-<section class="dashboard">
+<section class="dashboard" data-i18n-auto>
   <div class="container">
     <div class="dashboard__header">
       <div>
@@ -11,22 +11,23 @@
         <p class="dashboard__subtitle" data-i18n="posts.subtitle">Контент, статусы публикаций и ближайшие слоты.</p>
       </div>
       <div class="dashboard__actions">
-        <a class="btn btn--primary" href="/admin/posts/post/add/">Создать пост</a>
+        <a class="btn btn--primary" href="/admin/posts/post/add/" data-i18n="posts.new">Создать пост</a>
       </div>
     </div>
 
     <div class="limit-card">
       <div>
-        <p class="limit-card__title">Лимит публикаций на сегодня</p>
+        <p class="limit-card__title" data-i18n="comp.limit">Лимит публикаций на сегодня</p>
         <p class="limit-card__meta">
-          Использовано: <strong>{{ published_today }}</strong> из <strong>{{ daily_limit }}</strong>.
-          Осталось: <strong>{{ remaining_publishes }}</strong>.
+          <span data-i18n="comp.used">Использовано:</span> <strong>{{ published_today }}</strong>
+          <span data-i18n="comp.of">из</span> <strong>{{ daily_limit }}</strong>.
+          <span data-i18n="comp.remaining">Осталось:</span> <strong>{{ remaining_publishes }}</strong>.
         </p>
       </div>
       {% if publishing_blocked %}
-        <a class="btn btn--outline" href="{% url 'pricing' %}">Повысить тариф</a>
+        <a class="btn btn--outline" href="{% url 'pricing' %}" data-i18n="comp.upgrade">Повысить тариф</a>
       {% elif is_privileged %}
-        <span class="badge">Без ограничений</span>
+        <span class="badge" data-i18n="comp.unlimited">Без ограничений</span>
       {% endif %}
     </div>
 
@@ -86,12 +87,12 @@
         <table class="table">
           <thead>
             <tr>
-              <th>Пост</th>
-              <th>Кампания</th>
-              <th>Аккаунт</th>
-              <th>Статус</th>
+              <th data-i18n="col.post">Пост</th>
+              <th data-i18n="col.campaign">Кампания</th>
+              <th data-i18n="col.account">Аккаунт</th>
+              <th data-i18n="col.status">Статус</th>
               <th>AI</th>
-              <th>Действия</th>
+              <th data-i18n="col.actions">Действия</th>
             </tr>
           </thead>
           <tbody>

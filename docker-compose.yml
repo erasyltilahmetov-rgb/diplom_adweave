@@ -1,4 +1,4 @@
-version: "3.9"
+name: adweave
 
 services:
 
@@ -13,14 +13,19 @@ services:
       - DJANGO_SETTINGS_MODULE=config.settings
       - DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
       - OLLAMA_URL=http://ollama:11434/api/generate
-      - OLLAMA_MODEL=llama3.1:8b
+      - OLLAMA_MODEL=qwen2.5:3b
       - THREADS_DB_PATH=/data/posts.db
     env_file:
       - .env
     volumes:
       - ./db.sqlite3:/app/db.sqlite3
       - ./posts_dataset.db:/data/posts.db:ro
+      - ./data/browser_profile:/data/browser_profile
       - adweave_static:/app/staticfiles
+      # Код монтируется напрямую — docker cp больше не нужен
+      - ./ai_generator:/app/ai_generator
+      - ./templates:/app/templates
+      - ./static:/app/static
     depends_on:
       ollama:
         condition: service_healthy
@@ -30,17 +35,15 @@ services:
     image: ollama/ollama:latest
     container_name: adweave_ollama
     restart: unless-stopped
-    ports:
-      - "11434:11434"
     volumes:
       - ollama_models:/root/.ollama
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      test: ["CMD", "ollama", "list"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 30s
-    # Раскомментируй если есть NVIDIA GPU:
+    # Раскомментируй для NVIDIA GPU (RTX 5060):
     # deploy:
     #   resources:
     #     reservations:
@@ -61,21 +64,19 @@ services:
         condition: service_healthy
     entrypoint: >
       sh -c "
-        echo 'Скачиваю модель llama3.1:8b...' &&
-        OLLAMA_HOST=http://ollama:11434 ollama pull llama3.1:8b &&
+        echo 'Скачиваю модель qwen2.5:3b...' &&
+        OLLAMA_HOST=http://ollama:11434 ollama pull qwen2.5:3b &&
         echo 'Модель готова!'
       "
 
-  # ── Cloudflare Tunnel (HTTPS + публичный URL) ─────────────
+  # ── Cloudflare Quick Tunnel (HTTPS без аккаунта) ───────────
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: adweave_tunnel
     restart: unless-stopped
-    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    command: tunnel --no-autoupdate --url http://web:8000
     depends_on:
       - web
-    profiles:
-      - tunnel
 
 volumes:
   ollama_models:

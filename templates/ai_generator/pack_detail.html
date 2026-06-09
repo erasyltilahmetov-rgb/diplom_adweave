@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}{{ pack.name }} — AdWeave{% endblock %}
+
+{% block content %}
+<section class="dashboard">
+<div class="container">
+
+  <div class="dashboard__header">
+    <div>
+      <h1 class="dashboard__title">{{ pack.name }}</h1>
+      <p class="dashboard__subtitle">{{ pack.posts_count }} постов · {{ pack.created_at|date:"d.m.Y H:i" }}</p>
+    </div>
+    <div class="dashboard__actions">
+      <a class="btn btn--outline" href="{% url 'ai_generator:live_scrape' %}">← Live Scraper</a>
+      <a class="btn btn--primary" href="{% url 'compose' %}">Compose →</a>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="panel" style="margin-bottom:20px;padding:14px 20px">
+    <form method="get" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <input name="q" value="{{ q }}" type="text" placeholder="🔍 Поиск по тексту..."
+        style="flex:1;min-width:160px;background:var(--surface-muted);border:1px solid var(--border);border-radius:10px;padding:7px 14px;font-size:.85rem;color:var(--text)">
+      <select name="lang" style="background:var(--surface-muted);border:1px solid var(--border);border-radius:10px;padding:7px 12px;font-size:.85rem;color:var(--text)">
+        <option value="all" {% if lang == 'all' %}selected{% endif %}>Все языки</option>
+        <option value="ru" {% if lang == 'ru' %}selected{% endif %}>RU</option>
+        <option value="kz" {% if lang == 'kz' %}selected{% endif %}>KZ</option>
+        <option value="en" {% if lang == 'en' %}selected{% endif %}>EN</option>
+      </select>
+      <select name="sort" style="background:var(--surface-muted);border:1px solid var(--border);border-radius:10px;padding:7px 12px;font-size:.85rem;color:var(--text)">
+        <option value="likes" {% if sort == 'likes' %}selected{% endif %}>Топ по лайкам</option>
+        <option value="replies" {% if sort == 'replies' %}selected{% endif %}>Топ по комментам</option>
+        <option value="reposts" {% if sort == 'reposts' %}selected{% endif %}>Топ по репостам</option>
+        <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Новые</option>
+      </select>
+      <div style="display:flex;align-items:center;gap:8px">
+        <label style="font-size:.82rem;color:var(--text-muted)">Мин. лайков:</label>
+        <input name="min_likes" value="{{ min_likes }}" type="number" min="0"
+          style="width:70px;background:var(--surface-muted);border:1px solid var(--border);border-radius:10px;padding:7px 10px;font-size:.85rem;color:var(--text)">
+      </div>
+      <button class="btn btn--primary btn--small" type="submit">Применить</button>
+      <span style="color:var(--text-muted);font-size:.82rem">{{ posts|length }} постов</span>
+    </form>
+  </div>
+
+  <!-- AI Optimize from pack -->
+  <div class="panel" style="margin-bottom:24px;background:linear-gradient(135deg,rgba(109,99,255,0.08),rgba(127,91,255,0.03));border:1px solid rgba(109,99,255,0.2)">
+    <h3 style="font-size:.95rem;font-weight:700;margin:0 0 12px">✨ AI Оптимизация по паку «{{ pack.name }}»</h3>
+    <p style="font-size:.82rem;color:var(--text-muted);margin:0 0 14px">AI возьмёт топ-5 постов из этого пака по лайкам как примеры стиля и перепишет твой текст.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+      <textarea id="packOptText" rows="3" placeholder="Введи текст для оптимизации..."
+        style="flex:1;min-width:200px;background:var(--surface-muted);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:.88rem;color:var(--text);resize:vertical"></textarea>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <select id="packOptLang" style="background:var(--surface-muted);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:.85rem;color:var(--text)">
+          <option value="ru">RU</option><option value="kz">KZ</option><option value="en">EN</option>
+        </select>
+        <button onclick="optimizeFromPack()" class="btn btn--primary">✨ Оптимизировать</button>
+      </div>
+    </div>
+    <div id="packOptResult" style="display:none;margin-top:14px;background:var(--surface-muted);border:1px solid var(--border);border-radius:10px;padding:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:.78rem;color:#6d63ff;font-weight:600">Результат AI</span>
+        <button onclick="copyResult()" style="font-size:.75rem;background:none;border:1px solid var(--border);border-radius:8px;padding:3px 10px;color:var(--text-muted);cursor:pointer">Копировать</button>
+      </div>
+      <p id="packOptResultText" style="font-size:.88rem;line-height:1.6;color:var(--text);margin:0;white-space:pre-wrap"></p>
+      <a id="packOptCompose" href="{% url 'compose' %}" style="display:inline-block;margin-top:10px;font-size:.78rem;color:#6d63ff">→ Открыть в Compose</a>
+    </div>
+    <div id="packOptLoader" style="display:none;color:var(--text-muted);font-size:.82rem;margin-top:10px">⏳ Генерирую...</div>
+    <div id="packOptError" style="display:none;color:#ef4444;font-size:.82rem;margin-top:10px"></div>
+  </div>
+
+  <!-- Top stats -->
+  {% if posts %}
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px">
+    <div class="panel" style="padding:16px 20px;text-align:center">
+      <div style="font-size:1.6rem;font-weight:800;color:#ef4444">❤ {{ posts.0.likes }}</div>
+      <div style="font-size:.8rem;color:var(--text-muted);margin-top:4px">Макс. лайков</div>
+    </div>
+    <div class="panel" style="padding:16px 20px;text-align:center">
+      <div style="font-size:1.6rem;font-weight:800;color:#6d63ff">💬 {{ posts.0.replies }}</div>
+      <div style="font-size:.8rem;color:var(--text-muted);margin-top:4px">Комментов у топ-поста</div>
+    </div>
+    <div class="panel" style="padding:16px 20px;text-align:center">
+      <div style="font-size:1.6rem;font-weight:800;color:#22c55e">{{ pack.posts_count }}</div>
+      <div style="font-size:.8rem;color:var(--text-muted);margin-top:4px">Всего постов в паке</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Posts grid -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px">
+    {% for post in posts %}
+    <article style="background:#181818;border-radius:14px;padding:16px;border:1px solid #2e2e2e;position:relative;overflow:hidden">
+      <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:linear-gradient(90deg,{% if post.lang == 'ru' %}#6d63ff,#a78bfa44{% elif post.lang == 'kz' %}#059669,#34d39944{% else %}#d97706,#fbbf2444{% endif %})"></div>
+
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="position:relative;flex-shrink:0">
+          <div style="width:38px;height:38px;border-radius:50%;background:#3a3a3a;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;color:#fff">
+            {{ post.username|default:"?"|slice:":1"|upper }}
+          </div>
+          <div style="position:absolute;bottom:-2px;right:-2px;width:16px;height:16px;background:{% if post.lang == 'ru' %}#6d63ff{% elif post.lang == 'kz' %}#059669{% else %}#d97706{% endif %};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;border:2px solid #181818">{{ post.lang|upper|slice:":1" }}</div>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:.88rem;color:#fff">{% if post.username %}@{{ post.username }}{% else %}threads user{% endif %}</div>
+          <div style="font-size:.7rem;color:#888;display:flex;gap:5px;flex-wrap:wrap;margin-top:2px">
+            {% for entity in post.entities %}<span style="background:#6d63ff11;color:#6d63ff;font-size:.68rem;padding:1px 7px;border-radius:8px">{{ entity }}</span>{% endfor %}
+          </div>
+        </div>
+        <span style="font-size:.7rem;background:{% if post.lang == 'ru' %}rgba(109,99,255,.15){% elif post.lang == 'kz' %}rgba(5,150,105,.15){% else %}rgba(217,119,6,.15){% endif %};color:{% if post.lang == 'ru' %}#6d63ff{% elif post.lang == 'kz' %}#059669{% else %}#d97706{% endif %};border-radius:20px;padding:2px 8px">{{ post.lang|upper }}</span>
+      </div>
+
+      <p style="font-size:.88rem;line-height:1.6;color:#e0e0e0;margin:0 0 12px;white-space:pre-wrap;word-break:break-word">{{ post.text }}</p>
+
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;gap:18px;color:#555;font-size:.78rem">
+          <span>❤ {{ post.likes }}</span>
+          <span>💬 {{ post.replies }}</span>
+          <span>🔁 {{ post.reposts }}</span>
+        </div>
+        <a href="{% url 'compose' %}?pack_text={{ post.text|urlencode }}"
+          style="font-size:.75rem;color:#6d63ff;text-decoration:none;background:#6d63ff11;padding:3px 10px;border-radius:8px;border:1px solid #6d63ff33">
+          + в Compose
+        </a>
+      </div>
+    </article>
+    {% empty %}
+    <p style="color:var(--text-muted);grid-column:1/-1;text-align:center;padding:40px">Нет постов по фильтру.</p>
+    {% endfor %}
+  </div>
+
+</div>
+</section>
+
+<script>
+function optimizeFromPack() {
+  const text = document.getElementById('packOptText').value.trim();
+  const lang = document.getElementById('packOptLang').value;
+  if (!text) { alert('Введи текст'); return; }
+
+  document.getElementById('packOptLoader').style.display = 'block';
+  document.getElementById('packOptResult').style.display = 'none';
+  document.getElementById('packOptError').style.display = 'none';
+
+  fetch('{% url "ai_generator:pack_optimize" pack.id %}', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-CSRFToken': getCookie('csrftoken')},
+    body: JSON.stringify({text, language: lang})
+  })
+  .then(r => r.json())
+  .then(d => {
+    document.getElementById('packOptLoader').style.display = 'none';
+    if (d.result) {
+      document.getElementById('packOptResultText').textContent = d.result;
+      document.getElementById('packOptResult').style.display = 'block';
+      document.getElementById('packOptCompose').href = '{% url "compose" %}?text=' + encodeURIComponent(d.result);
+    } else {
+      document.getElementById('packOptError').textContent = d.error || 'Ошибка';
+      document.getElementById('packOptError').style.display = 'block';
+    }
+  })
+  .catch(() => {
+    document.getElementById('packOptLoader').style.display = 'none';
+    document.getElementById('packOptError').textContent = 'Ошибка соединения';
+    document.getElementById('packOptError').style.display = 'block';
+  });
+}
+
+function copyResult() {
+  const text = document.getElementById('packOptResultText').textContent;
+  navigator.clipboard.writeText(text).then(() => alert('Скопировано!'));
+}
+
+function getCookie(name) {
+  return document.cookie.split(';').map(c=>c.trim()).find(c=>c.startsWith(name+'='))?.split('=')[1]||'';
+}
+</script>
+{% endblock %}

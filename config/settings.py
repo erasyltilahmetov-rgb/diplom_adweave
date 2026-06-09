@@ -35,12 +35,15 @@ ALLOWED_HOSTS = [
     for host in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
     if host.strip()
 ]
+# Разрешаем все trycloudflare.com домены
+ALLOWED_HOSTS += [".trycloudflare.com"]
 
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
     if origin.strip()
 ]
+CSRF_TRUSTED_ORIGINS += ["https://*.trycloudflare.com"]
 
 
 # Application definition

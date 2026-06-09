@@ -7,17 +7,17 @@
   <div class="container">
     <div class="dashboard__header">
       <div>
-        <h1 class="dashboard__title">Профиль</h1>
-        <p class="dashboard__subtitle">Информация о пользователе и связанных компаниях.</p>
+        <h1 class="dashboard__title" data-i18n="prof.title">Профиль</h1>
+        <p class="dashboard__subtitle" data-i18n="prof.subtitle">Информация о пользователе и связанных компаниях.</p>
       </div>
       <div class="dashboard__actions">
         {% if is_admin %}
-          <a class="btn btn--outline" href="/admin/">Админка</a>
+          <a class="btn btn--outline" href="/admin/" data-i18n="prof.admin">Админка</a>
         {% endif %}
         {% if user_can_apply_company %}
-          <a class="btn btn--primary" href="{% url 'company_application_create' %}">Подключить компанию</a>
+          <a class="btn btn--primary" href="{% url 'company_application_create' %}" data-i18n="apply.title_short">Подключить компанию</a>
         {% else %}
-          <a class="btn btn--primary" href="{% url 'pricing' %}">Повысить тариф</a>
+          <a class="btn btn--primary" href="{% url 'pricing' %}" data-i18n="prof.upgrade">Повысить тариф</a>
         {% endif %}
       </div>
     </div>
@@ -28,7 +28,7 @@
           <div class="profile-card__avatar">{{ request.user.username|slice:":1"|upper }}</div>
           <div>
             <h2 class="panel__title">{{ request.user.username }}</h2>
-            <p class="dashboard__subtitle">{{ request.user.email|default:"Email не указан" }}</p>
+            <p class="dashboard__subtitle">{{ request.user.email|default:"—" }}</p>
           </div>
         </div>
         <div class="profile-card__meta">
@@ -46,32 +46,32 @@
         </div>
         <div class="profile-card__details">
           <div class="profile-detail">
-            <strong>Лимит автопубликаций</strong>
-            <span>{{ user_daily_threads_limit }} / день</span>
+            <strong data-i18n="prof.limit">Лимит автопубликаций</strong>
+            <span>{{ user_daily_threads_limit }} <span data-i18n="prof.per_day">/ день</span></span>
           </div>
           <div class="profile-detail">
-            <strong>Заявка на компанию</strong>
-            <span>{% if user_can_apply_company %}Доступно{% else %}Недоступно на базовом тарифе{% endif %}</span>
+            <strong data-i18n="prof.company_req">Заявка на компанию</strong>
+            <span>{% if user_can_apply_company %}<span data-i18n="prof.available">Доступно</span>{% else %}<span data-i18n="prof.unavailable">Недоступно на базовом тарифе</span>{% endif %}</span>
           </div>
         </div>
       </section>
 
       <section class="panel">
-        <h2 class="panel__title">Мои компании</h2>
+        <h2 class="panel__title" data-i18n="prof.my_companies">Мои компании</h2>
         {% if companies %}
           <div class="list">
             {% for company in companies %}
               <article class="list-item">
                 <div>
                   <p class="list-item__title">{{ company.name }}</p>
-                  <p class="list-item__meta">ИИН/БИН: {{ company.iin_bin }}</p>
+                  <p class="list-item__meta"><span data-i18n="prof.iin_bin">ИИН/БИН:</span> {{ company.iin_bin }}</p>
                 </div>
-                <span class="badge">Подключена</span>
+                <span class="badge" data-i18n="prof.connected">Подключена</span>
               </article>
             {% endfor %}
           </div>
         {% else %}
-          <p class="empty">У вас пока нет одобренных компаний.</p>
+          <p class="empty" data-i18n="prof.no_companies">У вас пока нет одобренных компаний.</p>
         {% endif %}
       </section>
     </div>
